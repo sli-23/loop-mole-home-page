@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#D8F3FE" />
+<title>Loop 20</title>
+<meta name="description" content="A small, quiet puzzle about putting a ring of stones back in order." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Quicksand carries the page (soft, rounded, matches the artwork). Fraunces
+     is used for the numeral alone — its WONK axis gives the "20" a hand-cut
+     wobble that a geometric sans can't. -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,600..900,0..100,0..1&family=Quicksand:wght@400..700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   LOOP 20 — home
+   Soft sky, soft lawn, one cool blue bubble. The scene is pinned and scroll
+   drives the conversation; keep scrolling past the last line and the download
+   card rises out of the same lawn (no hard seam between the two).
+
+   Two composition rules:
+     · title + mole are ONE centred cluster, nudged slightly left
+     · the bubble stands well clear of him, bridged by a long tapered pointer
+       that is anchored to the MOLE's box and aimed at his muzzle
+   ============================================================================ */
+:root{
+  --sky-hi:#F4FBFE;
+  --sky-lo:#D8F3FE;
+
+  --hill-1:#DCEFD4;
+  --hill-2:#C2E4AC;
+  --hill-3:#A3D489;
+  --lawn:#8CC776;
+  --lawn-deep:#67A861;        /* their Figma green */
+  --lawn-dusk:#5FA05B;        /* only a whisper below --lawn-deep: at #4F8F58
+                                 the download section read as a separate block
+                                 of colour instead of the same field */
+
+  --sun:#FFE9A3;
+  --sun-core:#FFD86B;
+  --cloud:#FFFFFF;
+  --bubble:#D8F3FE;           /* Figma: Rectangle 4 + Polygon 1 */
+  --coral:#FE7251;            /* straight off his tail — the one accent */
+
+  --paper:#FFFDF6;
+  --ink:#41564A;
+  --ink-70:rgba(65,86,74,.72);
+  --ink-45:rgba(65,86,74,.45);
+  --ink-18:rgba(65,86,74,.18);
+
+  --display:"Fraunces",Georgia,serif;
+  --text:"Quicksand",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+
+  --ease:cubic-bezier(.22,.68,.16,1);
+  --pop:cubic-bezier(.28,1.5,.42,1);
+
+  /* the mole, the gap, and the bubble — declared together so .pair can take
+     their combined width and the whole drawing centres as one unit */
+  --mole-w:clamp(184px, min(23vw,33vh), 320px);
+  --gap:clamp(18px, 2.1vw, 38px);
+  --bub-w:clamp(238px, 24vw, 352px);
+
+  /* How far he steps left once the demo appears. It drives BOTH his transform
+     and the .say column's left, so the mole-to-bubble distance never changes
+     and the tail keeps pointing at his muzzle without touching the tail. */
+  --mole-shift:0px;
+}
+.stage.demo-on{--mole-shift:12px;}
+
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+/* the page background matches the stage gradient's top note, so no seam can
+   appear above the pinned scene while it scrolls */
+body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
+  background:var(--sky-hi);}
+
+/* ============================================================================
+   ACT ONE — the pinned scene
+   ============================================================================ */
+.rig{position:relative; height:440vh;}
+.stage{position:sticky; top:0; height:100svh; overflow:hidden;
+  display:grid; place-items:center;
+  background:linear-gradient(179deg,var(--sky-hi) 0%,var(--sky-lo) 64%);}
+
+.sun{position:absolute; z-index:0; left:9vw; top:9vh;
+  width:clamp(66px,7.5vw,116px); aspect-ratio:1; border-radius:50%;
+  background:var(--sun-core); will-change:transform;}
+.sun::after{content:""; position:absolute; inset:-42%; border-radius:50%;
+  background:var(--sun); opacity:.34;}
+
+.cl{position:absolute; z-index:0; background:var(--cloud); border-radius:99px; opacity:.9;
+  will-change:transform;}
+.cl::before,.cl::after{content:""; position:absolute; background:var(--cloud); border-radius:50%;}
+.cl::before{width:54%; height:190%; left:7%;  bottom:32%;}
+.cl::after {width:38%; height:140%; right:8%; bottom:28%;}
+.cl.c1{right:8vw;  top:15vh; width:clamp(84px,11vw,160px); height:clamp(21px,2.5vw,35px);}
+.cl.c2{left:15vw;  top:31vh; width:clamp(54px,7vw,106px);  height:clamp(14px,1.8vw,24px); opacity:.66;}
+.cl.c3{right:34vw; top:8vh;  width:clamp(42px,5.2vw,80px); height:clamp(11px,1.4vw,18px); opacity:.48;}
+
+/* the lawn: four soft crests, the last one is the ground he sits on */
+.field{position:absolute; z-index:0; left:0; right:0; bottom:0; top:0;
+  pointer-events:none; will-change:transform;}
+.hl{position:absolute; left:-40%; right:-40%; border-radius:50% 50% 0 0 / 100% 100% 0 0;}
+.hl.h1{bottom:48%; height:20vh; background:var(--hill-1);}
+.hl.h2{bottom:40%; height:20vh; background:var(--hill-2); left:-54%; right:-18%;}
+.hl.h3{bottom:29%; height:22vh; background:var(--hill-3); left:-22%; right:-50%;}
+/* This band runs 70px PAST the bottom of the stage on purpose. The whole .field
+   is lifted by up to 16px of parallax, and at bottom:-1px that lift peeled the
+   lawn off the stage's bottom edge and exposed the sky gradient behind it — the
+   pale stripe that appeared between the two sections. The overhang is clipped
+   by .stage's overflow:hidden, so it costs nothing. */
+.hl.h4{bottom:-70px; height:calc(32% + 70px); background:var(--lawn-deep);
+  border-radius:42% 58% 0 0 / 11% 11% 0 0;}
+
+/* Little two-leaf sprouts rather than grass blades. Thin tapering blades fought
+   the background: everything else here is flat, soft and round, so spiky
+   strokes read as debris. Plump leaves sit in the same language. */
+.sprout{position:absolute; z-index:1; pointer-events:none;
+  width:clamp(24px,2.4vw,34px); height:auto;}
+.sprout .lf{fill:#83BE73;}
+.sprout .lf.dk{fill:#5C9B5E;}
+.sprout.t1{left:6vw;   bottom:16vh; transform:scaleX(-1);}
+.sprout.t2{left:24vw;  bottom:8vh;}
+.sprout.t3{right:11vw; bottom:19vh;}
+.sprout.t4{right:27vw; bottom:10vh; transform:scaleX(-1);}
+.sprout.t5{right:4vw;  bottom:5vh;}
+.sprout.t6{left:15vw;  bottom:4vh; width:clamp(20px,2vw,30px);}
+
+/* ============================================================================
+   THE CLUSTER — title and mole together, centred, a touch left of centre
+   ============================================================================ */
+.scene{position:relative; z-index:3; display:grid; justify-items:center;
+  /* the gap is what separates them: .stage centres the column, so widening it
+     lifts the title and drops the mole by the same amount */
+  gap:clamp(46px,10vh,118px); transform:translateX(-4%);
+  padding-bottom:clamp(20px,5vh,60px);}
+
+.wm{text-align:center; will-change:transform;}
+.wm .a{display:block; font-size:clamp(10.5px,1.2vw,14px); font-weight:700;
+  letter-spacing:.56em; padding-left:.56em; text-transform:uppercase; color:var(--ink-45);}
+.wm .b{display:block; margin-top:.02em;
+  font-family:var(--display); font-size:clamp(72px,11vw,158px); line-height:.86;
+  font-weight:900; letter-spacing:-.04em; color:#FFFFFF;
+  font-variation-settings:"SOFT" 100,"WONK" 1,"opsz" 144;
+  text-shadow:0 7px 0 var(--lawn-deep), 0 18px 26px rgba(65,86,74,.15);}
+.wm .t{margin:clamp(8px,1.5vh,16px) auto 0; max-width:30ch;
+  font-size:clamp(13px,1.35vw,16.5px); color:var(--ink-70); line-height:1.45;}
+
+/* ---- the pair: mole + gap + bubble, so centring it centres the drawing ---- */
+.pair{position:relative;
+  width:calc(var(--mole-w) + var(--gap) + var(--bub-w));}
+/* he steps aside when the demo comes out; .say shifts by the same amount */
+.molebox{position:relative; width:var(--mole-w);
+  transform:translateX(calc(-1 * var(--mole-shift)));
+  transition:transform .45s var(--ease);}
+.mole{display:block; width:100%; height:auto; position:relative; z-index:2;
+  transform-origin:60% 96%;}
+/* his feet sit at 43-86% across the 285x215 artwork */
+.molebox::after{content:""; position:absolute; z-index:1;
+  left:41%; width:48%; bottom:-2%; height:6%;
+  border-radius:50%; background:rgba(65,86,74,.17); filter:blur(6px);}
+
+.mole.hop{animation:hop .6s var(--pop);}
+@keyframes hop{
+  0%{transform:translateY(0) scale(1,1);}
+  22%{transform:translateY(0) scale(1.045,.95);}
+  55%{transform:translateY(-6%) scale(.985,1.035);}
+  100%{transform:translateY(0) scale(1,1);}
+}
+
+/* A DIALOGUE BOX, not a lozenge. The old one had a 72px radius and no outline,
+   which is exactly why it read as a formless blob — it needs a defined edge, a
+   name plate and a next-indicator to look like it belongs to a game. The fill
+   stays the Figma #D8F3FE. */
+/* The right-hand column. It inherits the exact position the bubble used to
+   have, so the verified tail-to-muzzle alignment is untouched, and it lets the
+   demo sit below the bubble in normal flow — a hard-coded top would collide,
+   because the bubble's height changes with each line of text. */
+.say{position:absolute; z-index:3; top:-8%; width:var(--bub-w);
+  left:calc(var(--mole-w) + var(--gap) - var(--mole-shift));
+  transition:left .45s var(--ease);}
+
+.bubble{position:relative; z-index:3; width:100%;
+  padding:clamp(21px,2.2vw,28px) clamp(21px,2.3vw,30px) clamp(18px,1.9vw,24px);
+  background:var(--bubble); border:3px solid var(--ink); border-radius:20px;
+  box-shadow:0 6px 0 rgba(65,86,74,.17), 0 16px 26px rgba(65,86,74,.13);
+  transform-origin:0% 55%;}
+.bubble.pop{animation:pop .5s var(--pop);}
+@keyframes pop{0%{transform:scale(.955);}100%{transform:scale(1);}}
+
+/* the name plate rides astride the top edge, the way game dialogue boxes do */
+.who{position:absolute; top:-14px; left:20px;
+  padding:3px 13px 4px; border:3px solid var(--ink); border-radius:99px;
+  background:var(--coral); color:#FFFFFF;
+  font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;}
+
+/* the little "keep going" chevron */
+.next{position:absolute; right:15px; bottom:12px; width:13px; height:9px;
+  background:var(--ink); clip-path:polygon(0 0, 100% 0, 50% 100%);
+  animation:bob 1.5s var(--ease) infinite;}
+@keyframes bob{0%,100%{transform:translateY(-2px); opacity:.5;}
+  50%{transform:translateY(1px); opacity:1;}}
+
+/* The tail is an OPEN path: the fill closes the triangle while the stroke draws
+   only its two outer sides, so the outline runs straight into the box with no
+   seam to patch. A short nub — stretched across the gap it became a thin dart
+   pointing at his eye, which is what looked wrong. */
+.tail{position:absolute; z-index:-1; left:-21px; top:50%; margin-top:-17px;
+  width:24px; height:34px; display:block; overflow:visible;}
+.tail path{fill:var(--bubble); stroke:var(--ink); stroke-width:3;
+  stroke-linejoin:round; stroke-linecap:round;}
+
+.line{margin:0; font-size:clamp(14px,1.42vw,18.5px); font-weight:600; line-height:1.5;
+  color:var(--ink);}
+.line span{display:inline-block; white-space:pre;
+  animation:word .44s var(--ease) backwards;}
+@keyframes word{from{opacity:0; transform:translateY(.5em);}to{opacity:1; transform:none;}}
+
+/* ---------------------------------------------------------------------------
+   THE DEMO — a length of the real board. Two things were broken in the first
+   pass and are fixed here:
+     · the sizes are declared on .demo, not .track. @keyframes reads --step off
+       .demo, and while they lived on the child the calc resolved to nothing and
+       the gate never moved at all.
+     · width:max-content + flex-start. With justify-content:center the row of
+       stones floated in the middle of the track, so the gate's absolute left no
+       longer matched the first stone — that is why it framed three stones off
+       to one side.
+   The gate also sits UNDER the stones now, so it frames them instead of tinting
+   them muddy brown.
+   --------------------------------------------------------------------------- */
+.demo{--sw:clamp(24px,2.4vw,32px); --sgap:clamp(6px,.7vw,9px);
+  --step:calc(var(--sw) + var(--sgap));
+  margin-top:clamp(12px,1.4vw,18px); width:100%;
+  opacity:0; transform:translateY(12px); pointer-events:none;
+  transition:opacity .5s var(--ease) .22s, transform .5s var(--ease) .22s;}
+.stage.demo-on .demo{opacity:1; transform:none;}
+
+.track{position:relative; display:flex; align-items:center; justify-content:flex-start;
+  width:max-content; margin-inline:auto;
+  gap:var(--sgap); padding:calc(var(--sgap) * .85) calc(var(--sgap) * 1.6);
+  background:#DDD2B8; border-radius:99px;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.45), 0 4px 0 rgba(65,86,74,.13);}
+
+.stone .d{display:block; line-height:1;}
+.stone{position:relative; z-index:2; flex:0 0 var(--sw); width:var(--sw); height:var(--sw);
+  border-radius:50%; display:grid; place-items:center;
+  background:#FFFDF6; border:2px solid rgba(110,63,34,.4); color:var(--ink);
+  font-size:calc(var(--sw) * .44); font-weight:700; font-variant-numeric:tabular-nums;
+  box-shadow:0 3px 0 #E3D6BA;
+  transition:background .45s var(--ease), color .45s var(--ease),
+             border-color .45s var(--ease), transform .13s var(--ease);}
+/* the green links, for when the row comes good */
+.link{position:absolute; z-index:1; top:50%; height:5px; margin-top:-2.5px;
+  background:#4E9B57; border-radius:3px; opacity:0;
+  transition:opacity .45s var(--ease);}
+
+/* the gate: the only thing that travels */
+.gate{position:absolute; z-index:1; top:calc(var(--sgap) * .1);
+  left:calc(var(--sgap) * .9);
+  height:calc(var(--sw) + var(--sgap) * 1.7);
+  width:calc(var(--sw) * 4 + var(--sgap) * 4.4);
+  border:3px solid #8A5E33; border-radius:99px;
+  background:rgba(181,128,74,.3); box-shadow:0 3px 0 rgba(65,86,74,.12);
+  transition:opacity .4s var(--ease), transform .55s var(--ease);}
+
+/* line 2 — the gate slides the length of the row; the stones do not budge */
+.demo.slide .gate{animation:gateSlide 3.8s var(--ease) infinite;}
+@keyframes gateSlide{
+  0%,10%  {transform:translateX(0);}
+  45%,55% {transform:translateX(calc(var(--step) * 3));}
+  90%,100%{transform:translateX(0);}
+}
+/* line 3 — it parks over the middle four, which then trade places */
+.demo.flip .gate{transform:translateX(calc(var(--step) * 2));}
+
+/* line 4 — in order, links closed, gate bows out */
+.demo.done .gate{opacity:0;}
+.demo.done .stone{background:#4E9B57; border-color:#3C7F46; color:#FFFDF6;
+  box-shadow:0 3px 0 #3C7F46;}
+.demo.done .link{opacity:1;}
+
+.meta{display:flex; align-items:center; gap:7px; margin-top:clamp(10px,1.2vw,15px);}
+.meta i{width:15px; height:4px; border-radius:2px; background:var(--ink-18);
+  transition:background .35s var(--ease), width .35s var(--pop);}
+.meta i.on{background:var(--coral); width:28px;}
+
+/* ---- chrome ---- */
+/* 9.5px was too small to read; the tracking tightens as the size goes up,
+   because .3em starts to fall apart at this scale */
+.scroll{position:absolute; z-index:4; left:50%; bottom:clamp(16px,2.8vh,30px);
+  transform:translateX(-50%); display:grid; justify-items:center; gap:8px;
+  font-size:clamp(12px,1.2vw,14px); font-weight:700; letter-spacing:.22em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.88); transition:opacity .5s var(--ease); pointer-events:none;}
+.scroll i{display:block; width:2px; height:32px; border-radius:1px;
+  background:linear-gradient(rgba(255,255,255,.85),transparent);
+  animation:drip 1.9s var(--ease) infinite;}
+@keyframes drip{0%,100%{transform:scaleY(.55); opacity:.5;}50%{transform:scaleY(1); opacity:1;}}
+.stage.moved .scroll{opacity:0;}
+
+.rail{position:absolute; z-index:4; right:clamp(12px,1.7vw,24px); top:50%;
+  transform:translateY(-50%); display:grid; gap:8px;}
+.rail b{display:block; width:4px; height:22px; border-radius:2px; background:var(--ink-18);
+  transition:background .35s var(--ease), height .35s var(--ease);}
+.rail b.on{background:var(--coral); height:34px;}
+
+/* ============================================================================
+   ACT TWO — the download card. Its field starts on exactly the lawn colour the
+   stage ends on, so there is no seam where one becomes the other.
+   ============================================================================ */
+/* The handoff: this section opens on exactly the lawn colour the pinned scene
+   ends on, so no line appears where one becomes the other, and a soft crest
+   swells over the join so the ground reads as continuing rather than switching. */
+/* margin-top pulls this section up over the pinned scene's bottom edge. 100svh
+   and 440vh round to fractional pixels, and the 1px of page background showing
+   through that crack was the pale blue line at the join. */
+.get{position:relative; z-index:5; min-height:100svh; overflow:hidden;
+  margin-top:-3px;
+  display:grid; place-items:center; padding:clamp(56px,10vh,110px) 6vw clamp(52px,8vh,92px);
+  background:linear-gradient(var(--lawn-deep) 0%, var(--lawn-deep) 38%, var(--lawn-dusk) 100%);}
+/* No crest and no overlay here on purpose. Both a lighter swell and a darker
+   gradient at the top registered as "a different section" when scrolling
+   through; the join reads as one continuous field only when the colour simply
+   carries on unchanged and the darkening starts well below the fold. */
+
+/* the card rises as it comes into view, instead of just being there */
+.card{position:relative; z-index:1; display:grid; justify-items:center; gap:clamp(13px,2.2vh,24px);
+  text-align:center; max-width:500px; width:100%;
+  padding:clamp(28px,4vw,48px) clamp(24px,3.6vw,48px);
+  background:var(--paper); border:3px solid var(--ink); border-radius:clamp(24px,3vw,34px);
+  box-shadow:0 8px 0 rgba(30,60,38,.2), 0 22px 44px rgba(30,60,38,.22);
+  opacity:0; transform:translateY(38px) scale(.972);
+  transition:opacity .8s var(--ease), transform .8s var(--ease);}
+.card.in{opacity:1; transform:none;}
+
+/* then the contents arrive one after another, so the panel assembles itself
+   instead of appearing all at once */
+.card > *{opacity:0; transform:translateY(15px);
+  transition:opacity .55s var(--ease), transform .55s var(--ease);}
+.card.in > *{opacity:1; transform:none;}
+.card.in .appicon{transition-delay:.16s;}
+.card.in h2     {transition-delay:.26s;}
+.card.in .sub   {transition-delay:.35s;}
+.card.in .qrwrap{transition-delay:.44s;}
+.card.in .badge {transition-delay:.54s;}
+/* the icon gets a little landing bounce on top of its fade */
+.card.in .appicon{animation:iconIn .66s var(--pop) .16s backwards;}
+@keyframes iconIn{0%{transform:translateY(-16px) scale(.82) rotate(-7deg);}
+  100%{transform:none;}}
+/* and the code pushes in slightly, like it is being offered to the camera */
+.card.in .qrwrap{animation:qrIn .6s var(--pop) .44s backwards;}
+@keyframes qrIn{0%{transform:scale(.9);}100%{transform:none;}}
+
+/* the logo is the mole on his grass block, so it centres in the tile rather
+   than sitting on the bottom edge the way the bare mascot did */
+/* the tile was washing out at #F4FBFE -> #D8F3FE, so the gradient now runs a
+   couple of steps deeper, and the shadow is bigger so it lifts off the card */
+.appicon{width:clamp(84px,10vw,118px); aspect-ratio:1; border-radius:24%;
+  background:linear-gradient(168deg,#D7F0FB 0%,#A6DBF1 100%);
+  box-shadow:0 14px 26px rgba(65,86,74,.3), 0 4px 0 rgba(65,86,74,.1);
+  display:grid; place-items:center; overflow:hidden;}
+.appicon svg{width:88%; height:auto; display:block;}
+
+.get h2{margin:0; font-family:var(--display); font-weight:900;
+  font-size:clamp(26px,3.6vw,44px); line-height:1.04; letter-spacing:-.025em; color:var(--ink);
+  font-variation-settings:"SOFT" 100,"WONK" 1,"opsz" 144;}
+.get .sub{margin:0; font-size:clamp(13px,1.4vw,16px); color:var(--ink-70); max-width:32ch;}
+
+.qrwrap{display:grid; justify-items:center; gap:10px; margin-top:2px;}
+.qrwrap svg{width:clamp(112px,12vw,146px); height:auto; display:block; border-radius:5px;}
+.qrwrap .cap{font-size:9.5px; font-weight:700; letter-spacing:.26em; text-transform:uppercase;
+  color:var(--ink-45);}
+
+.badge{display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+  padding:11px 21px 11px 17px; border-radius:12px; background:#1B2A20; color:#FFFFFF;
+  box-shadow:0 8px 18px rgba(30,60,38,.28);
+  transition:transform .16s var(--ease), box-shadow .16s var(--ease);}
+.badge:hover{transform:translateY(-2px); box-shadow:0 12px 22px rgba(30,60,38,.34);}
+.badge:active{transform:translateY(1px);}
+.badge svg{width:22px; height:22px; fill:currentColor; flex:0 0 auto;}
+.badge span{display:grid; text-align:left; line-height:1.14;}
+.badge .s1{font-size:9px; font-weight:500; opacity:.82; letter-spacing:.08em; text-transform:uppercase;}
+.badge .s2{font-size:16.5px; font-weight:700; letter-spacing:-.01em;}
+
+.get footer{position:absolute; bottom:clamp(16px,3vh,30px); left:0; right:0;
+  text-align:center; font-size:9.5px; font-weight:700; letter-spacing:.3em;
+  text-transform:uppercase; color:rgba(255,255,255,.5);}
+
+/* ============================================================================
+   NARROW — he goes centre stage, the bubble sits above him
+   ============================================================================ */
+@media (max-width:880px){
+  .rig{height:500vh;}
+  /* the gap has to clear the bubble, which now floats above him — at the old
+     54px it climbed straight over the title */
+  .scene{transform:none; gap:clamp(104px,15vh,148px);}
+  .pair{width:var(--pair-w);}
+  .molebox{width:100%;}
+  /* .say is the positioned element now, so the stacking override belongs here.
+     While these lived on .bubble they did nothing — the bubble became relative
+     when it moved inside .say — and the nub ended up buried in his body. */
+  /* both widths are named on .stage so the nub can be placed over his muzzle:
+     .say is wider than .pair and centred on it, so a plain left:50% landed the
+     nub 77px to the left of his face. */
+  .stage{--pair-w:min(258px,58vw); --say-w:min(84vw,376px);}
+  .say{left:50%; right:auto; top:auto; bottom:104%;
+    width:var(--say-w); transform:translateX(-50%);}
+  .bubble{width:100%;}
+  /* the nub moves to the underside, pointing down at him. It is an SVG, so it
+     rotates rather than being re-clipped. */
+  .tail{right:auto; top:auto; bottom:-25px; margin:0 0 0 -17px;
+    left:calc((var(--say-w) - var(--pair-w)) / 2 + var(--pair-w) * .75);
+    transform:rotate(-90deg);}
+  .wm .b{font-size:clamp(64px,19vw,112px);}
+  .wm .t{max-width:26ch;}
+  .rail{display:none;}
+  .sun{left:7vw; top:6vh;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition-duration:1ms !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="rig" id="rig">
+  <div class="stage" id="stage">
+
+    <div class="sun" id="sun"></div>
+    <div class="cl c1" data-depth="30"></div>
+    <div class="cl c2" data-depth="-20"></div>
+    <div class="cl c3" data-depth="44"></div>
+
+    <div class="field" id="field">
+      <div class="hl h1"></div><div class="hl h2"></div>
+      <div class="hl h3"></div><div class="hl h4"></div>
+    <svg class="sprout t1" viewBox="0 0 40 30" aria-hidden="true"><path class="lf dk" d="M20 29C20 18 14 10 5 7c1 11 6 19 15 22z"/><path class="lf" d="M20 29C20 17 26 9 35 6c-1 12-6 20-15 23z"/></svg>
+    <svg class="sprout t2" viewBox="0 0 40 30" aria-hidden="true"><path class="lf dk" d="M20 29C20 18 14 10 5 7c1 11 6 19 15 22z"/><path class="lf" d="M20 29C20 17 26 9 35 6c-1 12-6 20-15 23z"/></svg>
+    <svg class="sprout t3" viewBox="0 0 40 30" aria-hidden="true"><path class="lf dk" d="M20 29C20 18 14 10 5 7c1 11 6 19 15 22z"/><path class="lf" d="M20 29C20 17 26 9 35 6c-1 12-6 20-15 23z"/></svg>
+    <svg class="sprout t4" viewBox="0 0 40 30" aria-hidden="true"><path class="lf dk" d="M20 29C20 18 14 10 5 7c1 11 6 19 15 22z"/><path class="lf" d="M20 29C20 17 26 9 35 6c-1 12-6 20-15 23z"/></svg>
+    <svg class="sprout t5" viewBox="0 0 40 30" aria-hidden="true"><path class="lf dk" d="M20 29C20 18 14 10 5 7c1 11 6 19 15 22z"/><path class="lf" d="M20 29C20 17 26 9 35 6c-1 12-6 20-15 23z"/></svg>
+    <svg class="sprout t6" viewBox="0 0 40 30" aria-hidden="true"><path class="lf dk" d="M20 29C20 18 14 10 5 7c1 11 6 19 15 22z"/><path class="lf" d="M20 29C20 17 26 9 35 6c-1 12-6 20-15 23z"/></svg>
+    </div>
+
+    <div class="scene">
+      <div class="wm" id="wm">
+        <span class="a">loop</span>
+        <span class="b">20</span>
+        <p class="t">A small, quiet puzzle about putting things back in order.</p>
+      </div>
+
+      <div class="pair">
+        <div class="molebox">
+          <!-- the mascot artwork exactly as supplied -->
+          <svg class="mole" id="mole" viewBox="0 0 285 215" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Loop 20's mole">
+<mask id="mole-mask-scene" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="32" y="98" width="84" height="79">
+<path d="M34.5642 121.587C41.502 102.106 64.8367 93.5397 86.6839 102.454C108.531 111.369 120.618 134.389 113.68 153.871C106.742 173.352 83.407 181.918 61.5597 173.003C39.7127 164.088 27.6264 141.069 34.5642 121.587ZM57.7653 130.27C55.4527 136.764 61.4707 145.248 71.2059 149.221C80.941 153.193 90.7076 151.149 93.0201 144.656C95.3325 138.162 89.3153 129.678 79.5804 125.705C69.8453 121.733 60.0779 123.776 57.7653 130.27Z" fill="white"/>
+</mask>
+<g mask="url(#mole-mask-scene)">
+<ellipse cx="37.2138" cy="43.0141" rx="37.2138" ry="43.0141" transform="matrix(0.337565 -0.947888 0.919652 0.375264 22.0021 156.862)" fill="#FE7251"/>
+</g>
+<path d="M207.097 135.594C207.097 168.144 178.887 194.901 144.089 195.356C109.29 195.812 81.0806 169.794 81.0806 137.244C81.0806 104.693 109.29 77.9366 144.089 77.481C178.887 77.0255 207.097 103.044 207.097 135.594Z" fill="#965E47"/>
+<ellipse cx="78.1566" cy="78.5836" rx="78.1566" ry="78.5836" transform="matrix(0.999914 -0.0130896 0 1 99.641 2.42615)" fill="#965E47"/>
+<path d="M267.663 126.452C267.663 162.528 232.674 192.232 189.513 192.797C146.352 193.362 111.364 164.574 111.364 128.498C111.364 92.4209 146.352 62.717 189.513 62.152C232.674 61.5869 267.663 90.3748 267.663 126.452Z" fill="#965E47"/>
+<path d="M81.569 130.852C91.4914 58.4439 102.572 26.9451 149.462 7.17658L128.459 75.2299L81.569 130.852Z" fill="#965E47"/>
+<path d="M260.825 100.019C258.913 86.4914 257.133 77.8951 254.475 64.2484L251.056 93.2709L260.825 100.019Z" fill="#965E47"/>
+<path d="M239.252 57.3328C242.097 55.6104 243.105 52.0144 241.503 49.3009C239.901 46.5873 236.296 45.7838 233.451 47.5061C230.606 49.2285 229.599 52.8245 231.201 55.538C232.802 58.2516 236.407 59.0551 239.252 57.3328Z" fill="#161615"/>
+<path d="M225.186 53.0273C219.882 59.0396 215.359 68.3619 225.176 72.7617C222.07 74.9864 218.066 76.3021 213.908 76.4649C209.75 76.6277 205.718 75.6266 202.562 73.6471C199.166 71.5189 197.038 68.4212 196.632 65.0118C196.296 62.2155 197.142 59.3707 199.045 56.896C200.35 55.1942 202.115 53.719 204.214 52.5751C206.313 51.4312 208.695 50.6468 211.191 50.2775C213.686 49.9082 216.234 49.9631 218.653 50.4384C221.071 50.9136 223.302 51.7975 225.186 53.0273Z" fill="#FDCCA3"/>
+<path d="M225.176 72.7617C215.359 68.3619 219.882 59.0396 225.186 53.0273C227.452 54.5103 229.141 56.4448 230.083 58.6341C231.025 60.8233 231.186 63.1891 230.549 65.4911C229.788 68.2582 227.906 70.8052 225.176 72.7617Z" fill="#FBBF8C"/>
+<path d="M180.191 66.1209C183.59 66.0764 186.346 63.2697 186.346 59.8519C186.346 56.4341 183.59 53.6995 180.191 53.744C176.792 53.7885 174.037 56.5953 174.037 60.0131C174.037 63.4309 176.792 66.1654 180.191 66.1209Z" fill="#161615"/>
+<path d="M251.796 59.2505C250.285 60.0757 249.133 60.4739 248.338 60.4451C248.07 60.4396 247.812 60.3424 247.608 60.1694C247.404 59.9964 247.266 59.7579 247.216 59.4933C247.166 59.2286 247.207 58.9536 247.333 58.7134C247.459 58.4731 247.662 58.2821 247.908 58.1718L251.249 56.6055C255.046 55.2002 258.94 53.9639 262.933 52.8966C263.389 52.7728 263.76 53.056 264.046 53.7464C264.103 53.8857 264.131 54.0356 264.127 54.1869C264.124 54.3383 264.09 54.488 264.027 54.6268C263.963 54.7656 263.873 54.8906 263.76 54.9941C263.648 55.0976 263.516 55.1774 263.372 55.2287L251.796 59.2505Z" fill="white"/>
+<path d="M251.722 71.9852C250.012 71.9659 248.82 71.7479 248.147 71.3313C247.917 71.1943 247.742 70.9822 247.649 70.7298C247.557 70.4774 247.554 70.1998 247.639 69.9427C247.725 69.6856 247.894 69.4644 248.12 69.3154C248.346 69.1664 248.615 69.0985 248.882 69.123L252.536 69.3927C256.507 70.0284 260.48 70.8606 264.455 71.8893C264.91 72.005 265.093 72.4366 265.005 73.1841C264.986 73.3344 264.937 73.4797 264.86 73.6109C264.784 73.7422 264.681 73.8568 264.559 73.9476C264.437 74.0384 264.297 74.1036 264.15 74.1391C264.002 74.1746 263.849 74.1796 263.699 74.154L251.722 71.9852Z" fill="white"/>
+<path d="M164.917 67.371L150.909 64.1988C150.327 64.0669 149.742 64.4363 149.603 65.0239L149.59 65.0814C149.451 65.669 149.811 66.2523 150.393 66.3843L164.4 69.5564C164.983 69.6883 165.568 69.3189 165.706 68.7313L165.72 68.6738C165.859 68.0862 165.499 67.5029 164.917 67.371Z" fill="white"/>
+<path d="M163.811 76.756L148.537 81.0427C147.948 81.208 147.597 81.8206 147.754 82.411L147.764 82.4488C147.921 83.0392 148.526 83.3838 149.115 83.2184L164.389 78.9317C164.978 78.7664 165.329 78.1537 165.172 77.5634L165.162 77.5255C165.005 76.9352 164.4 76.5906 163.811 76.756Z" fill="white"/>
+<path d="M226.13 185.828C233.821 183.677 259.592 164.357 258.478 153.847C248.683 61.4491 174.031 89.3953 148.032 155.151C152.284 151.242 85.449 225.175 226.13 185.828Z" fill="white"/>
+<path d="M164.115 197.55C164.115 204.331 159.056 209.404 147.996 209.548C136.936 209.693 124.063 204.856 124.063 198.074C124.063 191.293 133.029 185.678 144.089 185.533C155.149 185.389 164.115 190.769 164.115 197.55Z" fill="#FDCCA3"/>
+<path d="M242.238 130.811C238.721 140.185 240.338 148.514 247.909 151.671C255.48 154.829 264.469 149.789 267.987 140.414C271.504 131.04 268.218 120.881 260.647 117.724C253.076 114.566 245.756 121.436 242.238 130.811Z" fill="#FDCCA3"/>
+<path d="M253.874 140.192C254.326 139.5 255.204 139.38 255.836 139.923C256.468 140.466 256.614 141.467 256.162 142.159L255.018 141.175L253.874 140.192ZM250.382 151.013C249.931 151.705 249.052 151.825 248.42 151.282C247.789 150.739 247.643 149.738 248.094 149.046L249.238 150.03L250.382 151.013ZM255.018 141.175L256.162 142.159L250.382 151.013L249.238 150.03L248.094 149.046L253.874 140.192L255.018 141.175Z" fill="#FCB540"/>
+<path d="M248.335 135.639C248.787 134.947 249.665 134.826 250.297 135.369C250.929 135.912 251.075 136.913 250.623 137.605L249.479 136.622L248.335 135.639ZM244.844 146.459C244.392 147.151 243.514 147.272 242.882 146.729C242.25 146.186 242.104 145.185 242.555 144.493L243.699 145.476L244.844 146.459ZM249.479 136.622L250.623 137.605L244.844 146.459L243.699 145.476L242.555 144.493L248.335 135.639L249.479 136.622Z" fill="#FCB540"/>
+<ellipse cx="17.3463" cy="18.349" rx="17.3463" ry="18.349" transform="matrix(0.973928 -0.23925 0.22415 0.971616 138.957 129.099)" fill="#FDCCA3"/>
+<path d="M159.19 148.465C158.81 147.734 157.915 147.476 157.19 147.887C156.465 148.299 156.186 149.225 156.565 149.956L157.877 149.211L159.19 148.465ZM161.544 159.543C161.924 160.274 162.819 160.533 163.544 160.121C164.268 159.709 164.548 158.783 164.169 158.052L162.856 158.798L161.544 159.543ZM157.877 149.211L156.565 149.956L161.544 159.543L162.856 158.798L164.169 158.052L159.19 148.465L157.877 149.211Z" fill="#FCB540"/>
+<path d="M166.443 144.53C166.063 143.8 165.168 143.541 164.443 143.953C163.718 144.364 163.439 145.291 163.818 146.021L165.13 145.276L166.443 144.53ZM168.797 155.609C169.177 156.339 170.072 156.598 170.796 156.186C171.521 155.775 171.801 154.848 171.422 154.118L170.109 154.863L168.797 155.609ZM165.13 145.276L163.818 146.021L168.797 155.609L170.109 154.863L171.422 154.118L166.443 144.53L165.13 145.276Z" fill="#FCB540"/>
+<ellipse cx="21.0042" cy="12.7701" rx="21.0042" ry="12.7701" transform="matrix(0.971625 -0.248904 0.236325 0.968575 202.72 182.23)" fill="#FDCCA3"/>
+</svg>
+        </div>
+        <div class="say">
+          <div class="bubble" id="bubble">
+            <span class="who">Mole</span>
+            <p class="line" id="line"></p>
+            <div class="meta" id="meta"></div>
+            <span class="next" aria-hidden="true"></span>
+            <svg class="tail" viewBox="0 0 24 34" aria-hidden="true">
+              <path d="M23 3 L3 17 L23 31"/>
+            </svg>
+          </div>
+          <!-- a length of the real board; stones, links and gate built in JS -->
+          <div class="demo" id="demo" aria-hidden="true">
+            <div class="track" id="track"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rail" id="railui"></div>
+    <div class="scroll"><span>scroll</span><i></i></div>
+
+  </div>
+</div>
+
+<section class="get">
+  <div class="card">
+    <div class="appicon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 354 316"
+     role="img" aria-label="Loop 20">
+  <g transform="translate(35.40,103.20) scale(0.8)">
+    <path d="M353.6 102.06C294.7 136.06 235.7 170.06 176.8 204.16V265.36C235.7 231.36 294.7 197.36 353.6 163.26V102.06Z" fill="#542B0A"/>
+    <path d="M176.8 204.16C117.9 170.06 58.9 136.06 0 102.06V163.26C58.9 197.36 117.9 231.36 176.8 265.36V204.16Z" fill="#542B0A"/>
+    <path d="M0.0200195 102.06C58.95 68.04 117.88 34.02 176.8 0C235.73 34.02 294.65 68.04 353.58 102.06C294.65 136.08 235.72 170.1 176.8 204.12C117.87 170.1 58.95 136.08 0.0200195 102.06Z" fill="#67A861"/>
+  </g>
+  <svg x="57.37" y="25.80" width="224.00" height="168.98" viewBox="0 0 285 215" overflow="visible">
+<mask id="mole-mask-logo" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="32" y="98" width="84" height="79">
+<path d="M34.5642 121.587C41.502 102.106 64.8367 93.5397 86.6839 102.454C108.531 111.369 120.618 134.389 113.68 153.871C106.742 173.352 83.407 181.918 61.5597 173.003C39.7127 164.088 27.6264 141.069 34.5642 121.587ZM57.7653 130.27C55.4527 136.764 61.4707 145.248 71.2059 149.221C80.941 153.193 90.7076 151.149 93.0201 144.656C95.3325 138.162 89.3153 129.678 79.5804 125.705C69.8453 121.733 60.0779 123.776 57.7653 130.27Z" fill="white"/>
+</mask>
+<g mask="url(#mole-mask-logo)">
+<ellipse cx="37.2138" cy="43.0141" rx="37.2138" ry="43.0141" transform="matrix(0.337565 -0.947888 0.919652 0.375264 22.0021 156.862)" fill="#FE7251"/>
+</g>
+<path d="M207.097 135.594C207.097 168.144 178.887 194.901 144.089 195.356C109.29 195.812 81.0806 169.794 81.0806 137.244C81.0806 104.693 109.29 77.9366 144.089 77.481C178.887 77.0255 207.097 103.044 207.097 135.594Z" fill="#965E47"/>
+<ellipse cx="78.1566" cy="78.5836" rx="78.1566" ry="78.5836" transform="matrix(0.999914 -0.0130896 0 1 99.641 2.42615)" fill="#965E47"/>
+<path d="M267.663 126.452C267.663 162.528 232.674 192.232 189.513 192.797C146.352 193.362 111.364 164.574 111.364 128.498C111.364 92.4209 146.352 62.717 189.513 62.152C232.674 61.5869 267.663 90.3748 267.663 126.452Z" fill="#965E47"/>
+<path d="M81.569 130.852C91.4914 58.4439 102.572 26.9451 149.462 7.17658L128.459 75.2299L81.569 130.852Z" fill="#965E47"/>
+<path d="M260.825 100.019C258.913 86.4914 257.133 77.8951 254.475 64.2484L251.056 93.2709L260.825 100.019Z" fill="#965E47"/>
+<path d="M239.252 57.3328C242.097 55.6104 243.105 52.0144 241.503 49.3009C239.901 46.5873 236.296 45.7838 233.451 47.5061C230.606 49.2285 229.599 52.8245 231.201 55.538C232.802 58.2516 236.407 59.0551 239.252 57.3328Z" fill="#161615"/>
+<path d="M225.186 53.0273C219.882 59.0396 215.359 68.3619 225.176 72.7617C222.07 74.9864 218.066 76.3021 213.908 76.4649C209.75 76.6277 205.718 75.6266 202.562 73.6471C199.166 71.5189 197.038 68.4212 196.632 65.0118C196.296 62.2155 197.142 59.3707 199.045 56.896C200.35 55.1942 202.115 53.719 204.214 52.5751C206.313 51.4312 208.695 50.6468 211.191 50.2775C213.686 49.9082 216.234 49.9631 218.653 50.4384C221.071 50.9136 223.302 51.7975 225.186 53.0273Z" fill="#FDCCA3"/>
+<path d="M225.176 72.7617C215.359 68.3619 219.882 59.0396 225.186 53.0273C227.452 54.5103 229.141 56.4448 230.083 58.6341C231.025 60.8233 231.186 63.1891 230.549 65.4911C229.788 68.2582 227.906 70.8052 225.176 72.7617Z" fill="#FBBF8C"/>
+<path d="M180.191 66.1209C183.59 66.0764 186.346 63.2697 186.346 59.8519C186.346 56.4341 183.59 53.6995 180.191 53.744C176.792 53.7885 174.037 56.5953 174.037 60.0131C174.037 63.4309 176.792 66.1654 180.191 66.1209Z" fill="#161615"/>
+<path d="M251.796 59.2505C250.285 60.0757 249.133 60.4739 248.338 60.4451C248.07 60.4396 247.812 60.3424 247.608 60.1694C247.404 59.9964 247.266 59.7579 247.216 59.4933C247.166 59.2286 247.207 58.9536 247.333 58.7134C247.459 58.4731 247.662 58.2821 247.908 58.1718L251.249 56.6055C255.046 55.2002 258.94 53.9639 262.933 52.8966C263.389 52.7728 263.76 53.056 264.046 53.7464C264.103 53.8857 264.131 54.0356 264.127 54.1869C264.124 54.3383 264.09 54.488 264.027 54.6268C263.963 54.7656 263.873 54.8906 263.76 54.9941C263.648 55.0976 263.516 55.1774 263.372 55.2287L251.796 59.2505Z" fill="white"/>
+<path d="M251.722 71.9852C250.012 71.9659 248.82 71.7479 248.147 71.3313C247.917 71.1943 247.742 70.9822 247.649 70.7298C247.557 70.4774 247.554 70.1998 247.639 69.9427C247.725 69.6856 247.894 69.4644 248.12 69.3154C248.346 69.1664 248.615 69.0985 248.882 69.123L252.536 69.3927C256.507 70.0284 260.48 70.8606 264.455 71.8893C264.91 72.005 265.093 72.4366 265.005 73.1841C264.986 73.3344 264.937 73.4797 264.86 73.6109C264.784 73.7422 264.681 73.8568 264.559 73.9476C264.437 74.0384 264.297 74.1036 264.15 74.1391C264.002 74.1746 263.849 74.1796 263.699 74.154L251.722 71.9852Z" fill="white"/>
+<path d="M164.917 67.371L150.909 64.1988C150.327 64.0669 149.742 64.4363 149.603 65.0239L149.59 65.0814C149.451 65.669 149.811 66.2523 150.393 66.3843L164.4 69.5564C164.983 69.6883 165.568 69.3189 165.706 68.7313L165.72 68.6738C165.859 68.0862 165.499 67.5029 164.917 67.371Z" fill="white"/>
+<path d="M163.811 76.756L148.537 81.0427C147.948 81.208 147.597 81.8206 147.754 82.411L147.764 82.4488C147.921 83.0392 148.526 83.3838 149.115 83.2184L164.389 78.9317C164.978 78.7664 165.329 78.1537 165.172 77.5634L165.162 77.5255C165.005 76.9352 164.4 76.5906 163.811 76.756Z" fill="white"/>
+<path d="M226.13 185.828C233.821 183.677 259.592 164.357 258.478 153.847C248.683 61.4491 174.031 89.3953 148.032 155.151C152.284 151.242 85.449 225.175 226.13 185.828Z" fill="white"/>
+<path d="M164.115 197.55C164.115 204.331 159.056 209.404 147.996 209.548C136.936 209.693 124.063 204.856 124.063 198.074C124.063 191.293 133.029 185.678 144.089 185.533C155.149 185.389 164.115 190.769 164.115 197.55Z" fill="#FDCCA3"/>
+<path d="M242.238 130.811C238.721 140.185 240.338 148.514 247.909 151.671C255.48 154.829 264.469 149.789 267.987 140.414C271.504 131.04 268.218 120.881 260.647 117.724C253.076 114.566 245.756 121.436 242.238 130.811Z" fill="#FDCCA3"/>
+<path d="M253.874 140.192C254.326 139.5 255.204 139.38 255.836 139.923C256.468 140.466 256.614 141.467 256.162 142.159L255.018 141.175L253.874 140.192ZM250.382 151.013C249.931 151.705 249.052 151.825 248.42 151.282C247.789 150.739 247.643 149.738 248.094 149.046L249.238 150.03L250.382 151.013ZM255.018 141.175L256.162 142.159L250.382 151.013L249.238 150.03L248.094 149.046L253.874 140.192L255.018 141.175Z" fill="#FCB540"/>
+<path d="M248.335 135.639C248.787 134.947 249.665 134.826 250.297 135.369C250.929 135.912 251.075 136.913 250.623 137.605L249.479 136.622L248.335 135.639ZM244.844 146.459C244.392 147.151 243.514 147.272 242.882 146.729C242.25 146.186 242.104 145.185 242.555 144.493L243.699 145.476L244.844 146.459ZM249.479 136.622L250.623 137.605L244.844 146.459L243.699 145.476L242.555 144.493L248.335 135.639L249.479 136.622Z" fill="#FCB540"/>
+<ellipse cx="17.3463" cy="18.349" rx="17.3463" ry="18.349" transform="matrix(0.973928 -0.23925 0.22415 0.971616 138.957 129.099)" fill="#FDCCA3"/>
+<path d="M159.19 148.465C158.81 147.734 157.915 147.476 157.19 147.887C156.465 148.299 156.186 149.225 156.565 149.956L157.877 149.211L159.19 148.465ZM161.544 159.543C161.924 160.274 162.819 160.533 163.544 160.121C164.268 159.709 164.548 158.783 164.169 158.052L162.856 158.798L161.544 159.543ZM157.877 149.211L156.565 149.956L161.544 159.543L162.856 158.798L164.169 158.052L159.19 148.465L157.877 149.211Z" fill="#FCB540"/>
+<path d="M166.443 144.53C166.063 143.8 165.168 143.541 164.443 143.953C163.718 144.364 163.439 145.291 163.818 146.021L165.13 145.276L166.443 144.53ZM168.797 155.609C169.177 156.339 170.072 156.598 170.796 156.186C171.521 155.775 171.801 154.848 171.422 154.118L170.109 154.863L168.797 155.609ZM165.13 145.276L163.818 146.021L168.797 155.609L170.109 154.863L171.422 154.118L166.443 144.53L165.13 145.276Z" fill="#FCB540"/>
+<ellipse cx="21.0042" cy="12.7701" rx="21.0042" ry="12.7701" transform="matrix(0.971625 -0.248904 0.236325 0.968575 202.72 182.23)" fill="#FDCCA3"/>
+  </svg>
+</svg></div>
+    <h2>Loop 20 is coming to iPhone</h2>
+    <p class="sub">Point your camera at the code and you'll have it the moment it lands.</p>
+
+    <div class="qrwrap">
+      <!-- PLACEHOLDER QR: correct anatomy (three finder eyes, timing tracks,
+           alignment block) but it encodes nothing, because there is no App Store
+           URL yet. Replace this whole <svg> once you have the link. -->
+      <svg viewBox="0 0 29 29" shape-rendering="crispEdges" role="img" aria-label="QR code placeholder">
+        <rect width="29" height="29" fill="#FFFFFF"/>
+        <g fill="#2A3A2E" id="qr-mods"></g>
+        <g fill="#2A3A2E">
+          <path d="M0 0h7v7H0z"/><path d="M22 0h7v7h-7z"/><path d="M0 22h7v7H0z"/>
+        </g>
+        <g fill="#FFFFFF">
+          <path d="M1 1h5v5H1z"/><path d="M23 1h5v5h-5z"/><path d="M1 23h5v5H1z"/>
+        </g>
+        <g fill="#2A3A2E">
+          <path d="M2 2h3v3H2z"/><path d="M24 2h3v3h-3z"/><path d="M2 24h3v3H2z"/>
+          <path d="M20 20h5v5h-5z"/>
+        </g>
+        <g fill="#FFFFFF"><path d="M21 21h3v3h-3z"/></g>
+        <g fill="#2A3A2E"><path d="M22 22h1v1h-1z"/></g>
+      </svg>
+      <span class="cap">scan to download</span>
+    </div>
+
+    <!-- Apple's badge is trademarked artwork — drop the official SVG from
+         developer.apple.com/app-store/marketing/guidelines/ in place of this. -->
+    <a class="badge" href="#" aria-label="Download on the App Store">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.05 12.9c-.03-2.4 1.96-3.55 2.05-3.6-1.12-1.64-2.86-1.86-3.47-1.89-1.48-.15-2.88.86-3.63.86-.75 0-1.9-.84-3.12-.82-1.6.02-3.08.93-3.9 2.36-1.67 2.9-.43 7.19 1.2 9.55.79 1.15 1.74 2.44 2.98 2.39 1.2-.05 1.65-.77 3.1-.77 1.44 0 1.85.77 3.11.75 1.28-.02 2.1-1.17 2.89-2.33.9-1.33 1.27-2.62 1.29-2.69-.03-.01-2.47-.95-2.5-3.77zM14.86 5.6c.66-.8 1.1-1.9.98-3.01-.95.04-2.13.64-2.81 1.43-.61.7-1.14 1.83-1 2.91 1.06.08 2.15-.54 2.83-1.33z"/></svg>
+      <span><span class="s1">Download on the</span><span class="s2">App Store</span></span>
+    </a>
+  </div>
+  <footer>Loop 20</footer>
+</section>
+
+<script>
+/* ============================================================================
+   Scroll drives everything: one rAF-throttled read gives a continuous 0..1 for
+   the parallax and a discrete index for the line.
+   ============================================================================ */
+const LINES = [
+  'Hi! My stones lost their order. Can you help me line them up?',
+  'You slide my little wooden gate around the ring. The stones stay put.',
+  'Then you flip it — and the four stones inside turn right around.',
+  'Get one to twenty into a single unbroken circle, and everything blooms.'
+];
+
+const $ = id => document.getElementById(id);
+const rig = $('rig'), stage = $('stage'), bubble = $('bubble'), mole = $('mole');
+const clouds = [...document.querySelectorAll('.cl')];
+
+/* dots and rail ticks are built from LINES, so they can never disagree with it */
+const dots  = LINES.map(() => $('meta').appendChild(document.createElement('i')));
+const ticks = LINES.map(() => $('railui').appendChild(document.createElement('b')));
+
+let at = -1;
+
+function writeLine(text){
+  const p = $('line');
+  p.textContent = '';
+  text.split(' ').forEach((w,i) => {
+    const s = document.createElement('span');
+    s.textContent = i ? ' ' + w : w;
+    s.style.animationDelay = (i * 26) + 'ms';
+    p.appendChild(s);
+  });
+}
+function replay(el, cls){
+  el.classList.remove(cls);
+  void el.offsetWidth;                 /* reflow, so the animation restarts */
+  el.classList.add(cls);
+}
+/* ---- the demo strip: 7 stones on fixed slots, one gate that travels ---- */
+const SCRAMBLED = [3, 7, 1, 5, 2, 6, 4];
+const demo = $('demo'), track = $('track');
+
+const stones = SCRAMBLED.map(n => {
+  const s = document.createElement('div');
+  s.className = 'stone';
+  const d = document.createElement('span');
+  d.className = 'd';
+  d.textContent = n;
+  s.appendChild(d);
+  s.digit = d;
+  return s;
+});
+(function buildTrack(){
+  /* the links sit in the gaps, positioned off the very same custom properties
+     the track sizes itself with, so they hold at any viewport width */
+  for(let i = 0; i < stones.length - 1; i++){
+    const l = document.createElement('span');
+    l.className = 'link';
+    l.style.left  = `calc(var(--sgap) * 1.6 + ${i + 1} * var(--sw) + ${i} * var(--sgap))`;
+    l.style.width = 'var(--sgap)';
+    track.appendChild(l);
+  }
+  stones.forEach(s => track.appendChild(s));
+  const g = document.createElement('div');
+  g.className = 'gate';
+  track.appendChild(g);
+})();
+
+/* The parked gate covers slots 2-5. The flip is aligned with the real game:
+   index.html's flipWindow() reverses the four values in place and gives those
+   four one quiet uniform scale(.94) dip for 130ms — nothing arcs, lifts or
+   swings past anything. The earlier version slid stones over each other, which
+   looked strange and is not what the game does. A flip is self-inverse, so
+   repeating it simply alternates between the two states. */
+const WINDOW = [2, 3, 4, 5];
+const DIP_MS = 130, SWAP_MS = 440;
+let order = SCRAMBLED.slice();
+let flipTimer = 0;
+
+function paintNumbers(list){
+  stones.forEach((s, i) => s.digit.textContent = list[i]);
+}
+function flipFour(){
+  const rev = WINDOW.map(k => order[k]).reverse();
+  /* Each digit leaves towards the slot it is travelling to, blinks out, and
+     arrives from the opposite side — so the reordering is legible without the
+     stones themselves flying over each other, which is what looked overdone.
+     The outer pair travels further than the inner pair, so it moves further. */
+  WINDOW.forEach((k, j) => {
+    const slots = (WINDOW.length - 1 - 2 * j);        /* +3, +1, -1, -3 */
+    const dx = Math.sign(slots) * (Math.abs(slots) > 1 ? 9 : 5);
+    stones[k].digit.animate([
+      {transform:'translateX(0)',            opacity:1, offset:0},
+      {transform:`translateX(${dx}px)`,      opacity:0, offset:.42},
+      {transform:`translateX(${-dx}px)`,     opacity:0, offset:.58},
+      {transform:'translateX(0)',            opacity:1, offset:1}
+    ], {duration:SWAP_MS, easing:'ease-in-out'});
+    /* swap the value while it is invisible, halfway through */
+    setTimeout(() => { stones[k].digit.textContent = rev[j]; }, SWAP_MS * .5);
+    /* and the same quiet uniform dip the game itself uses */
+    stones[k].style.transform = 'scale(.94)';
+    setTimeout(() => { stones[k].style.transform = ''; }, DIP_MS);
+  });
+  WINDOW.forEach((k, j) => order[k] = rev[j]);
+}
+function setDemo(i){
+  clearInterval(flipTimer); flipTimer = 0;
+  order = SCRAMBLED.slice();
+  stones.forEach(s => s.style.transform = '');
+
+  stage.classList.toggle('demo-on', i >= 1);
+  demo.classList.toggle('slide', i === 1);
+  demo.classList.toggle('flip',  i === 2);
+  demo.classList.toggle('done',  i === 3);
+
+  paintNumbers(i === 3 ? SCRAMBLED.map((_, k) => k + 1) : order);
+
+  if(i === 2 && !matchMedia('(prefers-reduced-motion:reduce)').matches){
+    setTimeout(flipFour, 500);
+    flipTimer = setInterval(flipFour, 2000);
+  }
+}
+
+function setLine(i){
+  at = i;
+  writeLine(LINES[i]);
+  replay(bubble, 'pop');
+  replay(mole, 'hop');
+  setDemo(i);
+  dots.forEach((d,k) => d.classList.toggle('on', k === i));
+  ticks.forEach((t,k) => t.classList.toggle('on', k === i));
+}
+
+function frame(){
+  const span = rig.offsetHeight - innerHeight;
+  const p = span > 0 ? Math.min(1, Math.max(0, scrollY / span)) : 0;
+
+  stage.classList.toggle('moved', p > .015);
+
+  clouds.forEach(c => c.style.transform = `translateX(${p * +c.dataset.depth}px)`);
+  $('field').style.transform = `translateY(${p * -16}px)`;
+  $('sun').style.transform   = `translateY(${p * 26}px)`;
+  $('wm').style.transform    = `translateY(${p * -38}px)`;
+
+  const i = Math.min(LINES.length - 1, Math.floor(p * LINES.length * 0.999));
+  if(i !== at) setLine(i);
+}
+
+let queued = false;
+addEventListener('scroll', () => {
+  if(queued) return;
+  queued = true;
+  requestAnimationFrame(() => { queued = false; frame(); });
+}, {passive:true});
+addEventListener('resize', frame);
+
+/* the placeholder QR's data area: seeded, so it draws identically every load
+   rather than flickering a new pattern each time */
+(function fillQR(){
+  let seed = 20250915;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const blocked = (x,y) =>
+    (x < 8 && y < 8) || (x > 20 && y < 8) || (x < 8 && y > 20) ||
+    (x >= 19 && x <= 25 && y >= 19 && y <= 25) || x === 6 || y === 6;
+  let d = '';
+  for(let y = 0; y < 29; y++)
+    for(let x = 0; x < 29; x++)
+      if(!blocked(x,y) && rnd() > .48) d += `M${x} ${y}h1v1h-1z`;
+  for(let i = 8; i < 21; i++) if(i % 2 === 0) d += `M${i} 6h1v1h-1zM6 ${i}h1v1h-1z`;
+  $('qr-mods').insertAdjacentHTML('beforeend', `<path d="${d}"/>`);
+})();
+
+/* reveal the download card as it scrolls into view */
+const card = document.querySelector('.card');
+if('IntersectionObserver' in window){
+  new IntersectionObserver((es,o) => es.forEach(e => {
+    if(e.isIntersecting){ card.classList.add('in'); o.unobserve(e.target); }
+  }), {threshold:0, rootMargin:'0px 0px -22% 0px'}).observe(card);
+}else{
+  card.classList.add('in');
+}
+
+setLine(0);
+frame();
+</script>
+</body>
+</html>
