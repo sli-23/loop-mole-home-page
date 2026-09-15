@@ -400,7 +400,7 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
      It also stacks in real flow: the old narrow layout kept .say absolutely
      positioned at bottom:104%, so .pair reserved only the mole's height and the
      dialogue punched up through the title. */
-  .stage{place-items:stretch; --pair-w:min(90vw,420px); --mole-narrow:min(340px,74vw,34vh);}
+  .stage{place-items:stretch; --pair-w:min(90vw,420px); --mole-narrow:min(300px,66vw,31vh);}
   /* One tight column, centred as a whole. Pinning the title to the top and
      centring the group underneath opened a big void between them on anything
      taller than a phone (a tablet in portrait is ~1.3 aspect, not 2.2). */
@@ -426,7 +426,11 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   .say{display:contents;}
   .bubble{position:relative; order:1; width:100%;}
   .molebox{order:2; width:var(--mole-narrow); transform:none;}
-  .demo{order:3; width:100%; margin-top:0;}
+  /* the board reads bigger on a phone, and he gives up a little size for it:
+     these scale off vw so the stones grow with the screen instead of sitting on
+     the desktop floor value of 24px */
+  .demo{order:3; width:100%; margin-top:0;
+    --sw:clamp(30px,8.4vw,40px); --sgap:clamp(7px,2.1vw,11px);}
   /* no stepping aside on a phone: he is centred under the bubble, and a shift
      would pull him out from under his own tail */
   .stage.demo-on{--mole-shift:0px;}
