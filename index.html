@@ -392,31 +392,59 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
    NARROW — he goes centre stage, the bubble sits above him
    ============================================================================ */
 @media (max-width:880px){
-  .rig{height:500vh;}
-  /* the gap has to clear the bubble, which now floats above him — at the old
-     54px it climbed straight over the title */
-  .scene{transform:none; gap:clamp(104px,15vh,148px);}
-  .pair{width:var(--pair-w);}
-  .molebox{width:100%;}
-  /* .say is the positioned element now, so the stacking override belongs here.
-     While these lived on .bubble they did nothing — the bubble became relative
-     when it moved inside .say — and the nub ended up buried in his body. */
-  /* both widths are named on .stage so the nub can be placed over his muzzle:
-     .say is wider than .pair and centred on it, so a plain left:50% landed the
-     nub 77px to the left of his face. */
-  .stage{--pair-w:min(258px,58vw); --say-w:min(84vw,376px);}
-  .say{left:50%; right:auto; top:auto; bottom:104%;
-    width:var(--say-w); transform:translateX(-50%);}
-  .bubble{width:100%;}
-  /* the nub moves to the underside, pointing down at him. It is an SVG, so it
-     rotates rather than being re-clipped. */
+  .rig{height:520vh;}
+  /* Phones get their own composition rather than a squeezed desktop one. The
+     title is pinned to the top and the group below it fills the whole remaining
+     height, which kills the ~250px of dead grass the centred version left, and
+     he can be much bigger — he is the hero of the page.
+     It also stacks in real flow: the old narrow layout kept .say absolutely
+     positioned at bottom:104%, so .pair reserved only the mole's height and the
+     dialogue punched up through the title. */
+  .stage{place-items:stretch; --pair-w:min(90vw,420px); --mole-narrow:min(340px,74vw,34vh);}
+  /* One tight column, centred as a whole. Pinning the title to the top and
+     centring the group underneath opened a big void between them on anything
+     taller than a phone (a tablet in portrait is ~1.3 aspect, not 2.2). */
+  .scene{transform:none; height:100%; width:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:clamp(16px,3vh,34px);
+    padding:clamp(20px,4vh,44px) 0 clamp(40px,7vh,72px);}
+
+  .wm{flex:0 0 auto;}
+  .wm .b{font-size:clamp(56px,16.5vw,100px);}
+  .wm .t{max-width:24ch; font-size:clamp(12.5px,3.3vw,15px);}
+
+  /* the group takes everything the title leaves, and centres inside it */
+  /* min-height:0 lets this shrink rather than overflow: centred content inside
+     a flex:1 track spills BOTH ways when it is too tall, which is how the
+     dialogue ended up sitting on top of the tagline on a short phone. */
+  .pair{flex:0 1 auto; min-height:0; width:var(--pair-w);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:clamp(10px,1.8vh,24px);}
+  /* display:contents dissolves .say so bubble / mole / demo are siblings and can
+     be ordered: spoken to from above, board at his feet. That also puts the
+     bubble's nub over his muzzle instead of over the demo strip. */
+  .say{display:contents;}
+  .bubble{position:relative; order:1; width:100%;}
+  .molebox{order:2; width:var(--mole-narrow); transform:none;}
+  .demo{order:3; width:100%; margin-top:0;}
+  /* no stepping aside on a phone: he is centred under the bubble, and a shift
+     would pull him out from under his own tail */
+  .stage.demo-on{--mole-shift:0px;}
+
+  /* the nub drops onto his muzzle, which sits 75% across the artwork — and the
+     artwork is centred inside .pair */
   .tail{right:auto; top:auto; bottom:-25px; margin:0 0 0 -17px;
-    left:calc((var(--say-w) - var(--pair-w)) / 2 + var(--pair-w) * .75);
+    left:calc((var(--pair-w) - var(--mole-narrow)) / 2 + var(--mole-narrow) * .75);
     transform:rotate(-90deg);}
-  .wm .b{font-size:clamp(64px,19vw,112px);}
-  .wm .t{max-width:26ch;}
+
   .rail{display:none;}
-  .sun{left:7vw; top:6vh;}
+  .sun{left:6vw; top:5vh; width:clamp(54px,15vw,80px);}
+  .cl.c3{display:none;}
+  .scroll{bottom:clamp(10px,1.8vh,20px);}
+  /* the download card gets room to breathe on a small screen */
+  .get{padding:clamp(40px,7vh,76px) 5vw clamp(56px,9vh,88px);}
+  .card{padding:clamp(24px,6vw,36px) clamp(20px,5vw,30px); gap:clamp(12px,2vh,18px);}
+  .get h2{font-size:clamp(24px,6.4vw,34px);}
 }
 
 @media (prefers-reduced-motion:reduce){
