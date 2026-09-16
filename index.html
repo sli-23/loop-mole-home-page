@@ -392,7 +392,11 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
    NARROW — he goes centre stage, the bubble sits above him
    ============================================================================ */
 @media (max-width:880px){
-  .rig{height:520vh;}
+  /* One screen, no scroll runway: on a phone the talk is advanced by TAPPING,
+     so there is nothing to scroll through. The page only becomes scrollable
+     once the conversation is finished, and then it goes to the download card. */
+  .rig{height:100svh;}
+  .stage{cursor:pointer;}
   /* Phones get their own composition rather than a squeezed desktop one. The
      title is pinned to the top and the group below it fills the whole remaining
      height, which kills the ~250px of dead grass the centred version left, and
@@ -453,6 +457,12 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   .card{padding:clamp(24px,6vw,36px) clamp(20px,5vw,30px); gap:clamp(12px,2vh,18px);}
   .get h2{font-size:clamp(24px,6.4vw,34px);}
 }
+
+/* the scroll lock for tap mode. Set on <html> so it holds on iOS too. */
+html.tap-locked, html.tap-locked body{overflow:hidden; height:100%;}
+/* a tap target hint that reads as a button rather than a scroll cue */
+.scroll.tap span{font-size:clamp(11px,2.8vw,13px);}
+.scroll.tap i{display:none;}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important; transition-duration:1ms !important;}
@@ -540,7 +550,7 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
     </div>
 
     <div class="rail" id="railui"></div>
-    <div class="scroll"><span>scroll</span><i></i></div>
+    <div class="scroll" id="hint"><span id="hintword">scroll</span><i></i></div>
 
   </div>
 </div>
@@ -751,19 +761,36 @@ function setLine(i){
   setDemo(i);
   dots.forEach((d,k) => d.classList.toggle('on', k === i));
   ticks.forEach((t,k) => t.classList.toggle('on', k === i));
+  applyMode();
+}
+
+/* Phones advance the talk by tapping; desktops scrub it with the scroll wheel.
+   Below 880px the page is also locked until the last line, so scrolling down
+   always means "I have read it, take me to the download". */
+const tapMode = () => matchMedia('(max-width:880px)').matches;
+const finished = () => at >= LINES.length - 1;
+
+function applyMode(){
+  const tap = tapMode();
+  document.documentElement.classList.toggle('tap-locked', tap && !finished());
+  $('hint').classList.toggle('tap', tap && !finished());
+  $('hintword').textContent = !tap ? 'scroll'
+    : finished() ? 'scroll for the app' : 'tap to continue';
 }
 
 function frame(){
   const span = rig.offsetHeight - innerHeight;
   const p = span > 0 ? Math.min(1, Math.max(0, scrollY / span)) : 0;
 
-  stage.classList.toggle('moved', p > .015);
+  /* the hint only fades on desktop, where scrolling is the verb */
+  stage.classList.toggle('moved', !tapMode() && p > .015);
 
   clouds.forEach(c => c.style.transform = `translateX(${p * +c.dataset.depth}px)`);
   $('field').style.transform = `translateY(${p * -16}px)`;
   $('sun').style.transform   = `translateY(${p * 26}px)`;
   $('wm').style.transform    = `translateY(${p * -38}px)`;
 
+  if(tapMode()) return;                 /* scroll must not drive the line here */
   const i = Math.min(LINES.length - 1, Math.floor(p * LINES.length * 0.999));
   if(i !== at) setLine(i);
 }
@@ -774,7 +801,20 @@ addEventListener('scroll', () => {
   queued = true;
   requestAnimationFrame(() => { queued = false; frame(); });
 }, {passive:true});
-addEventListener('resize', frame);
+addEventListener('resize', () => { applyMode(); frame(); });
+addEventListener('orientationchange', () => setTimeout(() => { applyMode(); frame(); }, 250));
+
+/* tap anywhere on the scene for the next line (phones only) */
+stage.addEventListener('click', () => {
+  if(!tapMode() || finished()) return;
+  setLine(at + 1);
+});
+addEventListener('keydown', e => {
+  if(!tapMode()) return;
+  if((e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') && !finished()){
+    e.preventDefault(); setLine(at + 1);
+  }
+});
 
 /* the placeholder QR's data area: seeded, so it draws identically every load
    rather than flickering a new pattern each time */
@@ -803,6 +843,7 @@ if('IntersectionObserver' in window){
 }
 
 setLine(0);
+applyMode();
 frame();
 </script>
 </body>
