@@ -343,14 +343,14 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
 .card.in .appicon{transition-delay:.16s;}
 .card.in h2     {transition-delay:.26s;}
 .card.in .sub   {transition-delay:.35s;}
-.card.in .qrwrap{transition-delay:.44s;}
+.card.in .play-note{transition-delay:.44s;}
 .card.in .badge {transition-delay:.54s;}
 /* the icon gets a little landing bounce on top of its fade */
 .card.in .appicon{animation:iconIn .66s var(--pop) .16s backwards;}
 @keyframes iconIn{0%{transform:translateY(-16px) scale(.82) rotate(-7deg);}
   100%{transform:none;}}
 /* and the code pushes in slightly, like it is being offered to the camera */
-.card.in .qrwrap{animation:qrIn .6s var(--pop) .44s backwards;}
+.card.in .play-note{animation:qrIn .6s var(--pop) .44s backwards;}
 @keyframes qrIn{0%{transform:scale(.9);}100%{transform:none;}}
 
 /* the logo is the mole on his grass block, so it centres in the tile rather
@@ -368,10 +368,15 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   font-variation-settings:"SOFT" 100,"WONK" 1,"opsz" 144;}
 .get .sub{margin:0; font-size:clamp(13px,1.4vw,16px); color:var(--ink-70); max-width:32ch;}
 
-.qrwrap{display:grid; justify-items:center; gap:10px; margin-top:2px;}
-.qrwrap svg{width:clamp(112px,12vw,146px); height:auto; display:block; border-radius:5px;}
-.qrwrap .cap{font-size:9.5px; font-weight:700; letter-spacing:.26em; text-transform:uppercase;
-  color:var(--ink-45);}
+.play-note{display:flex; align-items:center; gap:12px; margin-top:2px;
+  padding:12px 16px; border:2px solid var(--ink-18); border-radius:16px;
+  background:rgba(216,243,254,.58); color:var(--ink);}
+.play-note svg{width:29px; height:29px; flex:0 0 auto; fill:none;
+  stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+.play-note span{display:grid; gap:2px; text-align:left;}
+.play-note strong{font-size:13px; font-weight:700;}
+.play-note small{font-size:10px; font-weight:600; color:var(--ink-70);
+  letter-spacing:.04em;}
 
 .badge{display:inline-flex; align-items:center; gap:10px; text-decoration:none;
   padding:11px 21px 11px 17px; border-radius:12px; background:#1B2A20; color:#FFFFFF;
@@ -595,37 +600,23 @@ html.tap-locked, html.tap-locked body{overflow:hidden; height:100%;}
 <ellipse cx="21.0042" cy="12.7701" rx="21.0042" ry="12.7701" transform="matrix(0.971625 -0.248904 0.236325 0.968575 202.72 182.23)" fill="#FDCCA3"/>
   </svg>
 </svg></div>
-    <h2>Loop 20 is coming to iPhone</h2>
-    <p class="sub">Point your camera at the code and you'll have it the moment it lands.</p>
+    <h2>Play Loop 20 in your browser</h2>
+    <p class="sub">The playable prototype works on phones and desktops. No installation required.</p>
 
-    <div class="qrwrap">
-      <!-- PLACEHOLDER QR: correct anatomy (three finder eyes, timing tracks,
-           alignment block) but it encodes nothing, because there is no App Store
-           URL yet. Replace this whole <svg> once you have the link. -->
-      <svg viewBox="0 0 29 29" shape-rendering="crispEdges" role="img" aria-label="QR code placeholder">
-        <rect width="29" height="29" fill="#FFFFFF"/>
-        <g fill="#2A3A2E" id="qr-mods"></g>
-        <g fill="#2A3A2E">
-          <path d="M0 0h7v7H0z"/><path d="M22 0h7v7h-7z"/><path d="M0 22h7v7H0z"/>
-        </g>
-        <g fill="#FFFFFF">
-          <path d="M1 1h5v5H1z"/><path d="M23 1h5v5h-5z"/><path d="M1 23h5v5H1z"/>
-        </g>
-        <g fill="#2A3A2E">
-          <path d="M2 2h3v3H2z"/><path d="M24 2h3v3h-3z"/><path d="M2 24h3v3H2z"/>
-          <path d="M20 20h5v5h-5z"/>
-        </g>
-        <g fill="#FFFFFF"><path d="M21 21h3v3h-3z"/></g>
-        <g fill="#2A3A2E"><path d="M22 22h1v1h-1z"/></g>
+    <div class="play-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/>
+        <path d="M10 18.5h4"/>
       </svg>
-      <span class="cap">scan to download</span>
+      <span>
+        <strong>Mobile ready</strong>
+        <small>iPhone · Android · Desktop</small>
+      </span>
     </div>
 
-    <!-- Apple's badge is trademarked artwork — drop the official SVG from
-         developer.apple.com/app-store/marketing/guidelines/ in place of this. -->
-    <a class="badge" href="#" aria-label="Download on the App Store">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.05 12.9c-.03-2.4 1.96-3.55 2.05-3.6-1.12-1.64-2.86-1.86-3.47-1.89-1.48-.15-2.88.86-3.63.86-.75 0-1.9-.84-3.12-.82-1.6.02-3.08.93-3.9 2.36-1.67 2.9-.43 7.19 1.2 9.55.79 1.15 1.74 2.44 2.98 2.39 1.2-.05 1.65-.77 3.1-.77 1.44 0 1.85.77 3.11.75 1.28-.02 2.1-1.17 2.89-2.33.9-1.33 1.27-2.62 1.29-2.69-.03-.01-2.47-.95-2.5-3.77zM14.86 5.6c.66-.8 1.1-1.9.98-3.01-.95.04-2.13.64-2.81 1.43-.61.7-1.14 1.83-1 2.91 1.06.08 2.15-.54 2.83-1.33z"/></svg>
-      <span><span class="s1">Download on the</span><span class="s2">App Store</span></span>
+    <a class="badge" href="./play/" aria-label="Play Loop 20 in your browser">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      <span><span class="s1">No download needed</span><span class="s2">Play Loop 20</span></span>
     </a>
   </div>
   <footer>Loop 20</footer>
@@ -775,7 +766,7 @@ function applyMode(){
   document.documentElement.classList.toggle('tap-locked', tap && !finished());
   $('hint').classList.toggle('tap', tap && !finished());
   $('hintword').textContent = !tap ? 'scroll'
-    : finished() ? 'scroll for the app' : 'tap to continue';
+    : finished() ? 'scroll to play' : 'tap to continue';
 }
 
 function frame(){
@@ -815,22 +806,6 @@ addEventListener('keydown', e => {
     e.preventDefault(); setLine(at + 1);
   }
 });
-
-/* the placeholder QR's data area: seeded, so it draws identically every load
-   rather than flickering a new pattern each time */
-(function fillQR(){
-  let seed = 20250915;
-  const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
-  const blocked = (x,y) =>
-    (x < 8 && y < 8) || (x > 20 && y < 8) || (x < 8 && y > 20) ||
-    (x >= 19 && x <= 25 && y >= 19 && y <= 25) || x === 6 || y === 6;
-  let d = '';
-  for(let y = 0; y < 29; y++)
-    for(let x = 0; x < 29; x++)
-      if(!blocked(x,y) && rnd() > .48) d += `M${x} ${y}h1v1h-1z`;
-  for(let i = 8; i < 21; i++) if(i % 2 === 0) d += `M${i} 6h1v1h-1zM6 ${i}h1v1h-1z`;
-  $('qr-mods').insertAdjacentHTML('beforeend', `<path d="${d}"/>`);
-})();
 
 /* reveal the download card as it scrolls into view */
 const card = document.querySelector('.card');

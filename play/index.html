@@ -1,0 +1,1868 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Loop Twenty — Gameplay Prototype</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --sky: #b3e5fd;
+      --cream: #fffdf6;
+      --ink: #2c4433;
+      --track: #ddd2b8;
+      --track-edge: #cbc4aa;
+      --tile-border: #a58773;
+      --gate: #8a5e33;
+      --green: #35784a;
+      --green-soft: #7aa585;
+      --hill: #7ebf68;
+      --hill-dark: #61a45f;
+      --coral: #ff8261;
+      --coral-dark: #774834;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: grid;
+      min-height: 100dvh;
+      place-items: center;
+      overflow: hidden;
+      background: #111311;
+      font-family: "Avenir Next", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+      color: var(--ink);
+    }
+
+    .prototype-watermarks {
+      position: fixed;
+      z-index: 0;
+      inset: -13%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      align-items: center;
+      justify-items: center;
+      overflow: hidden;
+      color: rgba(255, 255, 255, 0.48);
+      font-size: clamp(16px, 2.25vw, 31px);
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      opacity: 0.1;
+      transform: rotate(-19deg);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .prototype-watermarks span {
+      white-space: nowrap;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .game {
+      position: relative;
+      z-index: 1;
+      width: min(100vw, 402px, calc(100dvh * 402 / 874));
+      aspect-ratio: 402 / 874;
+      overflow: hidden;
+      isolation: isolate;
+      background: var(--sky);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 24px 70px rgba(0, 0, 0, 0.38);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .sun {
+      position: absolute;
+      z-index: 0;
+      top: 5.1%;
+      right: 6.2%;
+      width: 20%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #ffc44e;
+      opacity: 0.94;
+    }
+
+    .cloud {
+      position: absolute;
+      z-index: 0;
+      top: 17.8%;
+      left: 10.6%;
+      width: 18%;
+      height: 4.2%;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .cloud::before,
+    .cloud::after {
+      position: absolute;
+      content: "";
+      border-radius: 50%;
+      background: inherit;
+    }
+
+    .cloud::before {
+      width: 45%;
+      aspect-ratio: 1;
+      left: 13%;
+      bottom: 34%;
+    }
+
+    .cloud::after {
+      width: 56%;
+      aspect-ratio: 1;
+      right: 10%;
+      bottom: 22%;
+    }
+
+    .landscape {
+      position: absolute;
+      z-index: 0;
+      bottom: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 28.03%;
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: absolute;
+      z-index: 12;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .pause-button {
+      position: absolute;
+      top: 5.15%;
+      left: 5%;
+      display: grid;
+      width: 15.2%;
+      aspect-ratio: 1;
+      padding: 0;
+      place-items: center;
+      border: min(0.55vw, 2.2px) solid var(--coral-dark);
+      border-radius: 50%;
+      background: #fcf2e6;
+      color: var(--ink);
+      box-shadow: 0 min(0.95vw, 4px) 0 rgba(255, 253, 246, 0.9);
+      cursor: pointer;
+      pointer-events: auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .pause-button:active {
+      transform: translateY(min(0.7vw, 3px));
+      box-shadow: none;
+    }
+
+    .pause-icon {
+      font-size: min(6.4vw, 25px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.1em;
+      transform: translateX(-0.05em);
+    }
+
+    .pause-button.is-paused .pause-icon {
+      font-size: min(5vw, 20px);
+      letter-spacing: 0;
+      transform: translateX(0.08em);
+    }
+
+    .timer {
+      position: absolute;
+      top: 12.93%;
+      left: 31.59%;
+      display: grid;
+      width: 38.06%;
+      height: 6.18%;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--cream);
+      box-shadow: 0 min(1vw, 4px) 0 #f0e7d2;
+      color: #bfc5bb;
+      font-family: "Quicksand", "Avenir Next Rounded", "Avenir Next", system-ui, sans-serif;
+      font-size: min(8.45vw, 34px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .timer > span {
+      display: block;
+      transform: translateY(min(0.5vw, 2px));
+    }
+
+    .prototype-badge {
+      position: absolute;
+      z-index: 13;
+      top: 1.7%;
+      left: 50%;
+      padding: 1.15% 4.4% 1%;
+      transform: translateX(-50%);
+      border: min(0.48vw, 1.9px) solid #774834;
+      border-radius: 999px;
+      background: #ff8261;
+      box-shadow: 0 min(0.78vw, 3px) 0 rgba(119, 72, 52, 0.9);
+      color: #fffdf6;
+      font-size: min(4.35vw, 17px);
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(119, 72, 52, 0.28);
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .track-frame {
+      position: absolute;
+      z-index: 1;
+      top: 23.91%;
+      left: 3.48%;
+      display: block;
+      width: 92.79%;
+      height: 44.39%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .mole {
+      position: absolute;
+      z-index: 3;
+      top: 54.58%;
+      left: 50%;
+      display: block;
+      width: 17.91%;
+      height: auto;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .vine-layer {
+      position: absolute;
+      z-index: 4;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .gate {
+      position: absolute;
+      z-index: 5;
+      top: 59.67%;
+      left: 21.27%;
+      display: block;
+      width: 57.21%;
+      height: 9.15%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .gate-coach {
+      position: absolute;
+      z-index: 9;
+      top: 50%;
+      left: 50%;
+      max-width: 62%;
+      padding: 1.45% 4%;
+      transform: translate(-50%, calc(-50% + 8px));
+      border: min(0.4vw, 1.6px) solid rgba(119, 72, 52, 0.72);
+      border-radius: 999px;
+      background: rgba(255, 253, 246, 0.96);
+      box-shadow: 0 min(0.75vw, 3px) 0 rgba(138, 94, 51, 0.16);
+      color: var(--ink);
+      font-size: min(3.55vw, 14px);
+      font-weight: 700;
+      letter-spacing: 0.025em;
+      line-height: 1.15;
+      opacity: 0;
+      text-align: center;
+      white-space: normal;
+      pointer-events: none;
+      transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+    }
+
+    .gate-coach::before {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      content: "";
+      transform: translateX(-50%);
+      border-right: min(1.3vw, 5px) solid transparent;
+      border-top: min(1.7vw, 7px) solid rgba(119, 72, 52, 0.72);
+      border-left: min(1.3vw, 5px) solid transparent;
+    }
+
+    .game.mole-speaking .gate-coach {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+
+    .game.coaching .gate-coach {
+      font-size: min(4.05vw, 16px);
+      padding: 1.65% 4.4%;
+      border-color: rgba(119, 72, 52, 0.88);
+      background: #fff8dc;
+    }
+
+    .game.coaching .gate {
+      animation: gate-coach-pulse 1.2s ease-in-out infinite;
+    }
+
+    .game.coaching .tile.in-gate {
+      animation: tile-coach-pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes gate-coach-pulse {
+      0%,
+      100% {
+        filter: drop-shadow(0 0 0 rgba(255, 196, 78, 0));
+      }
+      50% {
+        filter:
+          drop-shadow(0 0 min(2.4vw, 10px) rgba(255, 196, 78, 0.9))
+          drop-shadow(0 0 min(4vw, 16px) rgba(255, 196, 78, 0.35));
+      }
+    }
+
+    @keyframes tile-coach-pulse {
+      0%,
+      100% {
+        filter: drop-shadow(0 0 0 rgba(255, 196, 78, 0));
+      }
+      50% {
+        filter: drop-shadow(0 0 min(2.1vw, 8px) rgba(255, 196, 78, 0.72));
+      }
+    }
+
+    .gate-coach.message-pop {
+      animation: message-pop 230ms ease-out;
+    }
+
+    @keyframes message-pop {
+      from {
+        opacity: 0.35;
+        transform: translate(-50%, calc(-50% + 5px)) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .tile-layer {
+      position: absolute;
+      z-index: 6;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .tile {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      width: 12.76%;
+      aspect-ratio: 1;
+      place-items: center;
+      transform: translate3d(0, 0, 0) translate(-50%, -50%);
+      border: min(0.43vw, 1.7px) solid var(--tile-border);
+      border-radius: 50%;
+      background: var(--cream);
+      box-shadow: 0 min(0.74vw, 3px) 0 rgba(255, 253, 246, 0.72);
+      color: var(--ink);
+      font-size: min(5.7vw, 23px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 650;
+      line-height: 1;
+      backface-visibility: hidden;
+      contain: layout paint style;
+      will-change: transform;
+    }
+
+    .tile.correct {
+      border-color: var(--green-soft);
+      background: var(--green);
+      box-shadow: 0 min(0.74vw, 3px) 0 rgba(44, 68, 51, 0.25);
+      color: var(--cream);
+    }
+
+    .tile.in-gate {
+      filter: drop-shadow(0 0 min(1.8vw, 7px) rgba(138, 94, 51, 0.16));
+    }
+
+    .game.flipping .tile.in-gate {
+      transition: transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .game.flipping .gate {
+      animation: gate-pulse 140ms ease;
+    }
+
+    @keyframes gate-pulse {
+      0%,
+      100% {
+        filter: drop-shadow(0 0 0 rgba(138, 94, 51, 0));
+        transform: scale(1);
+      }
+      50% {
+        filter: drop-shadow(0 0 min(2.2vw, 9px) rgba(138, 94, 51, 0.3));
+        transform: scale(1.012);
+      }
+    }
+
+    .drag-surface {
+      position: absolute;
+      z-index: 7;
+      top: 21.2%;
+      left: 0;
+      width: 100%;
+      height: 49%;
+      cursor: grab;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .game.dragging .drag-surface {
+      cursor: grabbing;
+    }
+
+    .game.dragging .tile,
+    .game.settling .tile {
+      transition: none;
+    }
+
+    .pause-overlay {
+      position: absolute;
+      z-index: 20;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(48, 54, 51, 0.48);
+      -webkit-backdrop-filter: grayscale(1) saturate(0.18) brightness(0.76);
+      backdrop-filter: grayscale(1) saturate(0.18) brightness(0.76);
+      pointer-events: none;
+    }
+
+    .pause-overlay span {
+      min-width: 34%;
+      padding: 2.2% 4%;
+      border: min(0.5vw, 2px) solid rgba(119, 72, 52, 0.75);
+      border-radius: 999px;
+      background: rgba(255, 253, 246, 0.96);
+      box-shadow: 0 min(0.95vw, 4px) 0 rgba(44, 68, 51, 0.16);
+      color: var(--ink);
+      font-size: min(4.1vw, 16px);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .game.paused .pause-overlay {
+      display: grid;
+    }
+
+    .game.paused .topbar {
+      z-index: 21;
+    }
+
+    .game.paused .drag-surface {
+      pointer-events: none;
+    }
+
+    .hud {
+      position: absolute;
+      z-index: 10;
+      top: 71.65%;
+      left: 50%;
+      display: flex;
+      width: 80%;
+      transform: translateX(-50%);
+      flex-direction: column;
+      gap: min(1.7vw, 7px);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .order-score {
+      margin: 0;
+      color: rgba(44, 68, 51, 0.82);
+      font-size: min(3.45vw, 13.8px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .order-score .score-label {
+      letter-spacing: 0.2em;
+    }
+
+    .order-score strong {
+      margin-left: 0.65em;
+      color: var(--ink);
+      font-size: 1em;
+      letter-spacing: 0.025em;
+    }
+
+    .instruction {
+      margin: 0;
+      color: rgba(44, 68, 51, 0.7);
+      font-size: min(3.65vw, 14.5px);
+      font-weight: 500;
+      letter-spacing: 0.015em;
+    }
+
+    .flip-button {
+      position: absolute;
+      z-index: 11;
+      top: 80.05%;
+      left: 50%;
+      width: 36.07%;
+      height: 7.9%;
+      padding: 0;
+      transform: translateX(-50%);
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      transition: opacity 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .flip-button-art {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transform-origin: 50% 44%;
+      transition: transform 105ms cubic-bezier(0.22, 0.8, 0.25, 1);
+      pointer-events: none;
+    }
+
+    .flip-button-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      width: 100%;
+      height: 91.3%;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      font-size: min(5.2vw, 21px);
+      font-weight: 650;
+      letter-spacing: 0.03em;
+      line-height: 1;
+      text-align: center;
+      transform-origin: 50% 44%;
+      transition: transform 105ms cubic-bezier(0.22, 0.8, 0.25, 1);
+      pointer-events: none;
+    }
+
+    .flip-button:active:not(:disabled) {
+      transform: translateX(-50%);
+    }
+
+    .flip-button:active:not(:disabled) .flip-button-art,
+    .flip-button:active:not(:disabled) .flip-button-label {
+      transform: translateY(min(0.65vw, 2.6px)) scale(0.982);
+    }
+
+    .flip-button:disabled {
+      cursor: default;
+      opacity: 0.58;
+    }
+
+    .game.solved .flip-button {
+      border: min(0.57vw, 2.3px) solid var(--coral-dark);
+      border-radius: 999px;
+      background: #fff0a6;
+      box-shadow: 0 min(1.15vw, 4.6px) 0 #e8bf56;
+    }
+
+    .game.solved .flip-button-art {
+      visibility: hidden;
+    }
+
+    .game.solved .flip-button-label {
+      font-size: min(4.1vw, 16.5px);
+    }
+
+    .hint-button {
+      position: absolute;
+      z-index: 11;
+      top: 80.05%;
+      left: 80.1%;
+      display: flex;
+      width: 16%;
+      height: 10.2%;
+      padding: 0;
+      transform: translateX(-50%);
+      align-items: center;
+      flex-direction: column;
+      gap: min(2.1vw, 8.5px);
+      border: 0;
+      background: transparent;
+      color: var(--cream);
+      cursor: pointer;
+      opacity: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hint-button-circle {
+      display: grid;
+      width: 95.4%;
+      aspect-ratio: 1;
+      flex: 0 0 auto;
+      place-items: center;
+      border: min(0.53vw, 2.1px) solid var(--coral-dark);
+      border-radius: 50%;
+      background: #fcf2e6;
+      box-shadow: 0 min(1.05vw, 4.2px) 0 #fffdf6;
+      color: #384a40;
+      font-size: min(9.4vw, 38px);
+      font-weight: 500;
+      line-height: 1;
+      transform-origin: 50% 45%;
+      transition: transform 105ms cubic-bezier(0.22, 0.8, 0.25, 1);
+    }
+
+    .hint-button-label {
+      position: relative;
+      top: min(0.7vw, 3px);
+      color: var(--cream);
+      font-size: min(3.8vw, 15px);
+      font-weight: 500;
+      letter-spacing: 0.025em;
+      line-height: 1;
+    }
+
+    .hint-button:active .hint-button-circle {
+      transform: translateY(min(0.65vw, 2.6px)) scale(0.982);
+    }
+
+    .game.solved .hint-button {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .status {
+      position: absolute;
+      z-index: 10;
+      top: 88.2%;
+      left: 50%;
+      width: 82%;
+      min-height: 1.5em;
+      transform: translateX(-50%);
+      color: rgba(255, 253, 246, 0.9);
+      font-size: min(3.5vw, 14px);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      text-align: center;
+      text-shadow: 0 1px 0 rgba(44, 68, 51, 0.2);
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .game.solved .status {
+      color: var(--cream);
+      font-size: min(4vw, 16px);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .spark {
+      position: absolute;
+      z-index: 9;
+      width: 2.1%;
+      aspect-ratio: 1;
+      border-radius: 45% 55% 50% 50%;
+      background: #fff0a6;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .game.solved .spark {
+      animation: sparkle 1.5s ease-in-out infinite;
+    }
+
+    .spark.one {
+      top: 25%;
+      left: 18%;
+    }
+
+    .spark.two {
+      top: 29%;
+      right: 13%;
+      animation-delay: 300ms !important;
+    }
+
+    .spark.three {
+      top: 62%;
+      left: 10%;
+      animation-delay: 620ms !important;
+    }
+
+    @keyframes sparkle {
+      0%,
+      100% {
+        opacity: 0;
+        transform: scale(0.3) rotate(0);
+      }
+      45% {
+        opacity: 1;
+        transform: scale(1) rotate(120deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tile,
+      .gate,
+      .gate-coach,
+      .flip-button-art,
+      .flip-button-label,
+      .spark {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="prototype-watermarks" aria-hidden="true">
+    <span>PROTOTYPE</span><span>PROTOTYPE</span><span>PROTOTYPE</span><span>PROTOTYPE</span>
+    <span>PROTOTYPE</span><span>PROTOTYPE</span><span>PROTOTYPE</span><span>PROTOTYPE</span>
+    <span>PROTOTYPE</span><span>PROTOTYPE</span><span>PROTOTYPE</span><span>PROTOTYPE</span>
+  </div>
+  <main class="game" id="game" aria-label="Loop Twenty puzzle">
+    <div class="sun" aria-hidden="true"></div>
+    <div class="cloud" aria-hidden="true"></div>
+    <svg class="landscape" viewBox="0 0 402 245" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M402 0.843171C373.338 -3.25543 322 8.34302 296.5 19.3432C271 30.3433 223.83 53.3216 136.316 89.8679L2 143.363V245.619H402V0.843171Z" fill="#7EBF68"/>
+      <path d="M87.5 41.343C72 38.7925 59.5 34.8428 0 37.8429V244.843H402V111.407L180 69.8434C138.213 58.3382 127 47.8428 87.5 41.343Z" fill="#7EBF68"/>
+      <path d="M223.949 62.5988C221.81 62.3914 194.124 61.7982 186.72 61.8457C182.22 61.8457 158.096 62.426 154.22 62.5988C149.623 62.7976 133.261 64.4717 131.566 64.6661C118.209 66.1957 106.896 67.7877 97.6289 69.4425C83.742 71.9225 72.1235 74.3251 62.7734 76.6495C53.6227 78.9222 45.8747 81.1502 39.5293 83.3322L39.4304 83.3663C38.2838 83.7624 37.6928 83.9665 37.6582 83.9796C29.5784 86.464 21.6988 89.3918 14.0205 92.7619C10.3819 94.3622 0.533665 98.9724 0.414062 98.8859C0.351952 98.8345 0.30788 98.8023 0.282227 98.7892C0.256218 98.7781 0.228058 98.7814 0.203125 98.799C0.178267 98.8167 0.157702 98.8477 0.145508 98.8859C0.105654 99.0067 0.0569142 99.0741 0 99.0871V244.346H402V101.699C400.049 101.155 398.117 100.474 396.203 99.6574C392.9 98.2446 390.989 97.4432 390.474 97.2531C386.646 95.8274 383.515 94.5956 381.08 93.5587C377.325 91.9579 374.565 91.3618 370.365 89.8712C368.793 89.3096 366.099 88.454 362.283 87.3048C350.014 83.6107 343.336 81.3484 333.101 78.9699C324.756 77.0299 319.289 75.764 316.7 75.172C297.169 70.6807 280.191 68.2438 258.887 65.4894C253.612 64.8067 248.509 64.288 243.579 63.9337C241.916 63.8128 240.253 63.7136 238.59 63.6359C233.489 63.3939 228.609 63.0481 223.949 62.5988Z" fill="#61A45F"/>
+    </svg>
+
+    <header class="topbar">
+      <button class="pause-button" id="pauseButton" type="button" aria-label="Pause game">
+        <span class="pause-icon" id="pauseIcon" aria-hidden="true">Ⅱ</span>
+      </button>
+      <div class="timer" id="timer" aria-label="Elapsed time">
+        <span id="timerMain">00:00</span>
+      </div>
+    </header>
+    <div class="prototype-badge" aria-label="Prototype build">Prototype</div>
+
+    <svg class="track-frame" viewBox="0 0 373 388" fill="none" aria-hidden="true">
+      <g filter="url(#track-frame-shadow)">
+        <path
+          d="M275.77 0C329.468 0 373 43.5317 373 97.2305V286.77C373 340.468 329.468 384 275.77 384H97.2305C43.5317 384 0 340.468 0 286.77V97.2305C0 43.5317 43.5317 0 97.2305 0H275.77ZM97.2305 65C79.4302 65 65 79.4302 65 97.2305V286.77C65 304.57 79.4302 319 97.2305 319H275.77C293.57 319 308 304.57 308 286.77V97.2305C308 79.4302 293.57 65 275.77 65H97.2305Z"
+          fill="#DDD2B8"
+        />
+      </g>
+      <defs>
+        <filter
+          id="track-frame-shadow"
+          x="0"
+          y="0"
+          width="373"
+          height="388"
+          filterUnits="userSpaceOnUse"
+          color-interpolation-filters="sRGB"
+        >
+          <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset dy="4"/>
+          <feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="BackgroundImageFix"
+            result="effect1_dropShadow"
+          />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="effect1_dropShadow"
+            result="shape"
+          />
+        </filter>
+      </defs>
+    </svg>
+
+    <img class="mole" src="./mole-peek.svg" alt="" aria-hidden="true">
+
+    <svg class="vine-layer" id="vineLayer" viewBox="0 0 402 874" aria-hidden="true"></svg>
+    <svg class="gate" viewBox="0 0 230 80" fill="none" aria-hidden="true">
+      <rect
+        x="1.5"
+        y="1.5"
+        width="227"
+        height="77"
+        rx="38"
+        fill="#8A5E33"
+        fill-opacity="0.13"
+        stroke="#8A5E33"
+        stroke-width="3"
+      />
+    </svg>
+    <div class="gate-coach" id="gateCoach" aria-live="polite">This fixed gate flips these 4!</div>
+    <div class="tile-layer" id="tileLayer" aria-hidden="true"></div>
+    <div class="drag-surface" id="dragSurface" aria-label="Drag the number wheel around the track"></div>
+    <div class="pause-overlay" id="pauseOverlay" aria-hidden="true">
+      <span>Paused</span>
+    </div>
+
+    <section class="hud" aria-live="polite">
+      <p class="order-score">
+        <span class="score-label">Vine</span>
+        <strong><span id="orderScore">0</span> links connected</strong>
+      </p>
+      <p class="instruction" id="instruction">Drag numbers around the loop</p>
+    </section>
+
+    <button
+      class="flip-button"
+      id="flipButton"
+      type="button"
+      aria-label="Flip the four numbers inside the gate"
+    >
+      <img class="flip-button-art" src="./flip-button-base.svg" alt="" aria-hidden="true">
+      <span class="flip-button-label" id="flipButtonLabel" aria-hidden="true">Flip</span>
+    </button>
+    <button
+      class="hint-button"
+      id="hintButton"
+      type="button"
+      aria-label="Hint coming soon"
+    >
+      <span class="hint-button-circle" aria-hidden="true">?</span>
+      <span class="hint-button-label" aria-hidden="true">hint</span>
+    </button>
+    <p class="status" id="status" role="status">Flip reverses the four numbers inside the fixed gate.</p>
+
+    <i class="spark one" aria-hidden="true"></i>
+    <i class="spark two" aria-hidden="true"></i>
+    <i class="spark three" aria-hidden="true"></i>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SIZE = 20;
+      const FLIP_ANIMATION_MS = 150;
+      const SNAP_ANIMATION_MS = 150;
+      const TRACK_PROJECTION_STEPS = 12;
+      const VINE_SAMPLES_PER_LINK = 10;
+      const VIEWBOX_WIDTH = 402;
+      const VIEWBOX_HEIGHT = 874;
+
+      // These are the 20 physical positions on the fixed track, in increasing
+      // target order. The route runs counter-clockwise from the upper-left.
+      const TRACK_POINTS = [
+        { x: 120.65, y: 241.65 },
+        { x: 67.65, y: 257.65 },
+        { x: 46.65, y: 310.65 },
+        { x: 46.65, y: 367.65 },
+        { x: 46.65, y: 424.25 },
+        { x: 46.65, y: 481.55 },
+        { x: 60.65, y: 536.65 },
+        { x: 117.65, y: 560.65 },
+        { x: 172.95, y: 560.65 },
+        { x: 228.25, y: 560.65 },
+        { x: 283.55, y: 560.65 },
+        { x: 340.65, y: 536.65 },
+        { x: 355.65, y: 481.65 },
+        { x: 355.65, y: 424.65 },
+        { x: 355.65, y: 369.65 },
+        { x: 355.65, y: 314.65 },
+        { x: 337.65, y: 260.65 },
+        { x: 285.55, y: 240.65 },
+        { x: 231.25, y: 240.65 },
+        { x: 175.95, y: 240.65 }
+      ];
+
+      // The wooden gate never moves. It always acts on these four physical slots.
+      const GATE_SLOTS = [7, 8, 9, 10];
+
+      const game = document.getElementById("game");
+      const tileLayer = document.getElementById("tileLayer");
+      const vineLayer = document.getElementById("vineLayer");
+      const dragSurface = document.getElementById("dragSurface");
+      const flipButton = document.getElementById("flipButton");
+      const flipButtonLabel = document.getElementById("flipButtonLabel");
+      const pauseButton = document.getElementById("pauseButton");
+      const pauseIcon = document.getElementById("pauseIcon");
+      const pauseOverlay = document.getElementById("pauseOverlay");
+      const orderScore = document.getElementById("orderScore");
+      const instruction = document.getElementById("instruction");
+      const status = document.getElementById("status");
+      const timerMain = document.getElementById("timerMain");
+      const gateCoach = document.getElementById("gateCoach");
+
+      const MOLE_MESSAGES = [
+        "You've got this!",
+        "Nice thinking!",
+        "The vine is growing!",
+        "One good flip at a time.",
+        "Keep exploring the loop!",
+        "Great focus!"
+      ];
+
+      const tileElements = new Map();
+      let order = Array.from({ length: SIZE }, (_, index) => index + 1);
+      let initialOrder = order.slice();
+      let scrambleCertificate = [];
+      let dragOffset = 0;
+      let lastPointerProgress = 0;
+      let dragStartClientX = 0;
+      let dragStartClientY = 0;
+      let dragHasMoved = false;
+      let activePointerId = null;
+      let isDragging = false;
+      let isAnimating = false;
+      let isPaused = false;
+      let isSolved = false;
+      let flipCount = 0;
+      let flipAnimationTimer = null;
+      let snapAnimationFrame = null;
+      let dragRenderFrame = null;
+      let screenTapPointerId = null;
+      let screenTapStartX = 0;
+      let screenTapStartY = 0;
+      let screenTapEligible = false;
+      let hasShownGateCoach = false;
+      let moleMessageIndex = 0;
+      let moleCycleToken = 0;
+      let moleEncouragementStarted = false;
+      let gameBounds = null;
+      let gameScale = 1;
+      let orderRevision = 0;
+      let analyzedRevision = -1;
+      let renderedAnalysisRevision = -1;
+      let cachedAnalysis = null;
+
+      let elapsedBeforeRun = 0;
+      let runStartedAt = null;
+      let clockStarted = false;
+      let timerFrame = null;
+
+      for (let value = 1; value <= SIZE; value += 1) {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.textContent = String(value);
+        tile.dataset.value = String(value);
+        tileLayer.appendChild(tile);
+        tileElements.set(value, tile);
+      }
+
+      const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+      const vineShadow = document.createElementNS(SVG_NAMESPACE, "path");
+      const vineStroke = document.createElementNS(SVG_NAMESPACE, "path");
+
+      [
+        [vineShadow, "rgba(44,68,51,.22)", "9"],
+        [vineStroke, "#35784a", "6"]
+      ].forEach(([path, color, width]) => {
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", color);
+        path.setAttribute("stroke-width", width);
+        path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("stroke-linejoin", "round");
+        vineLayer.appendChild(path);
+      });
+
+      function modulo(value, divisor) {
+        return ((value % divisor) + divisor) % divisor;
+      }
+
+      function catmullCoordinate(a, b, c, d, t, tSquared, tCubed) {
+        return 0.5 * (
+          (2 * b) +
+          (-a + c) * t +
+          (2 * a - 5 * b + 4 * c - d) * tSquared +
+          (-a + 3 * b - 3 * c + d) * tCubed
+        );
+      }
+
+      function pointAt(progress) {
+        const normalized = modulo(progress, SIZE);
+        const index = Math.floor(normalized);
+        const fraction = normalized - index;
+        const previous = TRACK_POINTS[modulo(index - 1, SIZE)];
+        const start = TRACK_POINTS[index];
+        const end = TRACK_POINTS[(index + 1) % SIZE];
+        const next = TRACK_POINTS[(index + 2) % SIZE];
+        const fractionSquared = fraction * fraction;
+        const fractionCubed = fractionSquared * fraction;
+
+        // Tiles, hit testing, and vines all follow this same closed curve.
+        // Keeping one continuously differentiable route prevents a link from
+        // changing shape when it enters or leaves a rounded corner.
+        return {
+          x: catmullCoordinate(
+            previous.x,
+            start.x,
+            end.x,
+            next.x,
+            fraction,
+            fractionSquared,
+            fractionCubed
+          ),
+          y: catmullCoordinate(
+            previous.y,
+            start.y,
+            end.y,
+            next.y,
+            fraction,
+            fractionSquared,
+            fractionCubed
+          )
+        };
+      }
+
+      const TRACK_PROJECTION_SEGMENTS = [];
+
+      function buildTrackProjectionSegments() {
+        for (let index = 0; index < SIZE; index += 1) {
+          let start = pointAt(index);
+
+          for (let step = 0; step < TRACK_PROJECTION_STEPS; step += 1) {
+            const end = pointAt(
+              index + ((step + 1) / TRACK_PROJECTION_STEPS)
+            );
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            TRACK_PROJECTION_SEGMENTS.push({
+              x: start.x,
+              y: start.y,
+              dx,
+              dy,
+              lengthSquared: dx * dx + dy * dy,
+              progress: index + (step / TRACK_PROJECTION_STEPS)
+            });
+            start = end;
+          }
+        }
+      }
+
+      buildTrackProjectionSegments();
+
+      function projectToTrack(x, y) {
+        let bestDistanceSquared = Infinity;
+        let bestProgress = 0;
+
+        for (
+          let index = 0;
+          index < TRACK_PROJECTION_SEGMENTS.length;
+          index += 1
+        ) {
+          const segment = TRACK_PROJECTION_SEGMENTS[index];
+          const rawT = segment.lengthSquared === 0
+            ? 0
+            : (
+              (x - segment.x) * segment.dx +
+              (y - segment.y) * segment.dy
+            ) / segment.lengthSquared;
+          const t = Math.max(0, Math.min(1, rawT));
+          const projectedX = segment.x + segment.dx * t;
+          const projectedY = segment.y + segment.dy * t;
+          const distanceSquared =
+            (x - projectedX) * (x - projectedX) +
+            (y - projectedY) * (y - projectedY);
+
+          if (distanceSquared < bestDistanceSquared) {
+            bestDistanceSquared = distanceSquared;
+            bestProgress =
+              segment.progress + (t / TRACK_PROJECTION_STEPS);
+          }
+        }
+
+        return {
+          progress: modulo(bestProgress, SIZE),
+          distance: Math.sqrt(bestDistanceSquared)
+        };
+      }
+
+      function refreshGameGeometry() {
+        gameBounds = game.getBoundingClientRect();
+        gameScale = gameBounds.width / VIEWBOX_WIDTH;
+      }
+
+      function pointerInViewBox(event) {
+        const rect = gameBounds || game.getBoundingClientRect();
+        return {
+          x: ((event.clientX - rect.left) / rect.width) * VIEWBOX_WIDTH,
+          y: ((event.clientY - rect.top) / rect.height) * VIEWBOX_HEIGHT
+        };
+      }
+
+      function successor(value) {
+        return value === SIZE ? 1 : value + 1;
+      }
+
+      function analyzeOrder(candidate = order) {
+        const correctEdges = [];
+        const correctValues = new Set();
+
+        for (let index = 0; index < SIZE; index += 1) {
+          const current = candidate[index];
+          const next = candidate[(index + 1) % SIZE];
+          if (next === successor(current)) {
+            correctEdges.push(index);
+            correctValues.add(current);
+            correctValues.add(next);
+          }
+        }
+
+        return {
+          score: correctEdges.length,
+          correctEdges,
+          correctValues
+        };
+      }
+
+      function markOrderChanged() {
+        orderRevision += 1;
+        cachedAnalysis = null;
+        analyzedRevision = -1;
+      }
+
+      function currentAnalysis() {
+        if (cachedAnalysis === null || analyzedRevision !== orderRevision) {
+          cachedAnalysis = analyzeOrder();
+          analyzedRevision = orderRevision;
+        }
+        return cachedAnalysis;
+      }
+
+      function circularDistance(a, b) {
+        const direct = Math.abs(modulo(a - b, SIZE));
+        return Math.min(direct, SIZE - direct);
+      }
+
+      function isVisuallyInsideGate(progress) {
+        return GATE_SLOTS.some((slot) => circularDistance(progress, slot) < 0.47);
+      }
+
+      function drawVines(correctEdges) {
+        const links = correctEdges.map((index) => {
+          const progress = index + dragOffset;
+          const points = [];
+
+          for (let step = 0; step <= VINE_SAMPLES_PER_LINK; step += 1) {
+            points.push(
+              pointAt(progress + (step / VINE_SAMPLES_PER_LINK))
+            );
+          }
+
+          return points.map((point, pointIndex) => (
+            `${pointIndex === 0 ? "M" : "L"} ` +
+            `${point.x.toFixed(2)} ${point.y.toFixed(2)}`
+          )).join(" ");
+        });
+        const path = links.join(" ");
+
+        vineShadow.setAttribute("d", path);
+        vineStroke.setAttribute("d", path);
+      }
+
+      function render() {
+        const analysis = currentAnalysis();
+        const analysisChanged =
+          renderedAnalysisRevision !== orderRevision;
+
+        order.forEach((value, baseIndex) => {
+          const tile = tileElements.get(value);
+          const visualProgress = baseIndex + dragOffset;
+          const position = pointAt(visualProgress);
+          tile.style.transform =
+            `translate3d(${(position.x * gameScale).toFixed(2)}px, ` +
+            `${(position.y * gameScale).toFixed(2)}px, 0) ` +
+            "translate(-50%, -50%)";
+          if (analysisChanged) {
+            tile.classList.toggle(
+              "correct",
+              analysis.correctValues.has(value)
+            );
+          }
+          tile.classList.toggle("in-gate", isVisuallyInsideGate(visualProgress));
+        });
+
+        drawVines(analysis.correctEdges);
+        if (analysisChanged) {
+          orderScore.textContent = String(analysis.score);
+          renderedAnalysisRevision = orderRevision;
+        }
+
+        const solvedNow = analysis.score === SIZE;
+        if (solvedNow !== isSolved) {
+          isSolved = solvedNow;
+          game.classList.toggle("solved", isSolved);
+
+          if (isSolved) {
+            stopClock();
+            moleCycleToken += 1;
+            moleEncouragementStarted = false;
+            game.classList.remove("coaching");
+            game.classList.add("mole-speaking");
+            setMoleMessage("You closed the loop!");
+            flipButtonLabel.textContent = "New loop";
+            flipButton.setAttribute("aria-label", "Start a new loop");
+            flipButton.disabled = false;
+            instruction.textContent = "The whole vine is connected";
+            status.textContent = `Loop complete in ${flipCount} flip${flipCount === 1 ? "" : "s"}!`;
+          } else {
+            flipButtonLabel.textContent = "Flip";
+            flipButton.setAttribute(
+              "aria-label",
+              "Flip the four numbers inside the gate"
+            );
+            instruction.textContent = "Drag numbers around the loop";
+            status.textContent = "Flip reverses the four numbers inside the fixed gate.";
+          }
+        }
+      }
+
+      function rotatedCopy(candidate, steps) {
+        const rotated = new Array(SIZE);
+        for (let index = 0; index < SIZE; index += 1) {
+          rotated[modulo(index + steps, SIZE)] = candidate[index];
+        }
+        return rotated;
+      }
+
+      function reverseGate(candidate) {
+        const result = candidate.slice();
+        const values = GATE_SLOTS.map((slot) => result[slot]).reverse();
+        GATE_SLOTS.forEach((slot, index) => {
+          result[slot] = values[index];
+        });
+        return result;
+      }
+
+      function randomInteger(minimum, maximum) {
+        const range = maximum - minimum + 1;
+        if (window.crypto && window.crypto.getRandomValues) {
+          const random = new Uint32Array(1);
+          window.crypto.getRandomValues(random);
+          return minimum + (random[0] % range);
+        }
+        return minimum + Math.floor(Math.random() * range);
+      }
+
+      function makeGuaranteedSolvablePuzzle() {
+        // Important: this is not a free random permutation. Every candidate starts
+        // solved and is scrambled only with actions the player can legally undo.
+        for (let attempt = 0; attempt < 300; attempt += 1) {
+          let candidate = Array.from({ length: SIZE }, (_, index) => index + 1);
+          const certificate = [];
+          const flipTotal = randomInteger(7, 10);
+
+          for (let index = 0; index < flipTotal; index += 1) {
+            const rotation = randomInteger(1, SIZE - 1);
+            candidate = rotatedCopy(candidate, rotation);
+            certificate.push({ type: "rotate", steps: rotation });
+
+            candidate = reverseGate(candidate);
+            certificate.push({ type: "flip" });
+          }
+
+          const finalRotation = randomInteger(0, SIZE - 1);
+          candidate = rotatedCopy(candidate, finalRotation);
+          certificate.push({ type: "rotate", steps: finalRotation });
+
+          const score = analyzeOrder(candidate).score;
+          if (score >= 1 && score <= 7) {
+            return { candidate, certificate };
+          }
+        }
+
+        // Still legal and solvable if the preferred visual score was not found.
+        let fallback = Array.from({ length: SIZE }, (_, index) => index + 1);
+        const certificate = [];
+        [3, 8, 13, 5, 11, 17, 6, 14].forEach((rotation) => {
+          fallback = rotatedCopy(fallback, rotation);
+          certificate.push({ type: "rotate", steps: rotation });
+          fallback = reverseGate(fallback);
+          certificate.push({ type: "flip" });
+        });
+        return { candidate: fallback, certificate };
+      }
+
+      function inverseCertificate(certificate) {
+        return certificate.slice().reverse().map((move) => (
+          move.type === "rotate"
+            ? { type: "rotate", steps: -move.steps }
+            : { type: "flip" }
+        ));
+      }
+
+      function applyMoves(candidate, moves) {
+        return moves.reduce((state, move) => (
+          move.type === "rotate"
+            ? rotatedCopy(state, move.steps)
+            : reverseGate(state)
+        ), candidate.slice());
+      }
+
+      function hasValidSolutionCertificate(puzzle) {
+        const restored = applyMoves(
+          puzzle.candidate,
+          inverseCertificate(puzzle.certificate)
+        );
+        return restored.every((value, index) => value === index + 1);
+      }
+
+      function setMoleMessage(message) {
+        gateCoach.classList.remove("message-pop");
+        void gateCoach.offsetWidth;
+        gateCoach.textContent = message;
+        gateCoach.classList.add("message-pop");
+        window.setTimeout(() => {
+          gateCoach.classList.remove("message-pop");
+        }, 260);
+      }
+
+      function scheduleMoleMessage(token) {
+        window.setTimeout(() => {
+          if (token !== moleCycleToken || isSolved) {
+            return;
+          }
+          setMoleMessage(MOLE_MESSAGES[moleMessageIndex % MOLE_MESSAGES.length]);
+          moleMessageIndex += 1;
+          scheduleMoleMessage(token);
+        }, 7200);
+      }
+
+      function startMoleEncouragements(showMessageNow = true) {
+        if (moleEncouragementStarted || isSolved) {
+          return;
+        }
+        moleEncouragementStarted = true;
+        game.classList.add("mole-speaking");
+        const token = ++moleCycleToken;
+
+        if (showMessageNow) {
+          setMoleMessage(MOLE_MESSAGES[moleMessageIndex % MOLE_MESSAGES.length]);
+          moleMessageIndex += 1;
+        }
+        scheduleMoleMessage(token);
+      }
+
+      function showGateCoach() {
+        game.classList.add("mole-speaking");
+
+        if (hasShownGateCoach) {
+          startMoleEncouragements(true);
+          return;
+        }
+
+        hasShownGateCoach = true;
+        game.classList.add("coaching");
+        setMoleMessage("WOODEN GATE · flips these 4");
+        moleCycleToken += 1;
+      }
+
+      function dismissGateCoach() {
+        game.classList.remove("coaching");
+        startMoleEncouragements(true);
+      }
+
+      function newPuzzle() {
+        stopClock(true);
+        const puzzle = makeGuaranteedSolvablePuzzle();
+        if (!hasValidSolutionCertificate(puzzle)) {
+          throw new Error("Generated puzzle failed its solution certificate.");
+        }
+        order = puzzle.candidate;
+        markOrderChanged();
+        initialOrder = order.slice();
+        scrambleCertificate = puzzle.certificate;
+        dragOffset = 0;
+        dragHasMoved = false;
+        flipCount = 0;
+        isSolved = false;
+        isAnimating = false;
+        if (flipAnimationTimer !== null) {
+          window.clearTimeout(flipAnimationTimer);
+          flipAnimationTimer = null;
+        }
+        if (snapAnimationFrame !== null) {
+          cancelAnimationFrame(snapAnimationFrame);
+          snapAnimationFrame = null;
+        }
+        if (dragRenderFrame !== null) {
+          cancelAnimationFrame(dragRenderFrame);
+          dragRenderFrame = null;
+        }
+        activePointerId = null;
+        screenTapPointerId = null;
+        screenTapEligible = false;
+        isPaused = false;
+        moleCycleToken += 1;
+        moleEncouragementStarted = false;
+        game.classList.remove(
+          "solved",
+          "paused",
+          "dragging",
+          "settling",
+          "flipping",
+          "snapping",
+          "coaching",
+          "mole-speaking"
+        );
+        pauseButton.classList.remove("is-paused");
+        pauseIcon.textContent = "Ⅱ";
+        pauseButton.setAttribute("aria-label", "Pause game");
+        pauseOverlay.setAttribute("aria-hidden", "true");
+        flipButtonLabel.textContent = "Flip";
+        flipButton.setAttribute(
+          "aria-label",
+          "Flip the four numbers inside the gate"
+        );
+        flipButton.disabled = false;
+        instruction.textContent = "Drag numbers around the loop";
+        status.textContent =
+          "Tap the playfield or Flip to reverse the four inside the fixed gate.";
+        render();
+        showGateCoach();
+      }
+
+      function startClock() {
+        if (isPaused || isSolved) {
+          return;
+        }
+        clockStarted = true;
+        if (runStartedAt === null) {
+          runStartedAt = performance.now();
+        }
+        if (timerFrame === null) {
+          timerFrame = requestAnimationFrame(updateClock);
+        }
+      }
+
+      function currentElapsed() {
+        if (runStartedAt === null) {
+          return elapsedBeforeRun;
+        }
+        return elapsedBeforeRun + performance.now() - runStartedAt;
+      }
+
+      function paintClock(milliseconds) {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        timerMain.textContent =
+          `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function updateClock() {
+        timerFrame = null;
+        paintClock(currentElapsed());
+        if (runStartedAt !== null && !isPaused && !isSolved) {
+          timerFrame = requestAnimationFrame(updateClock);
+        }
+      }
+
+      function stopClock(reset = false) {
+        if (runStartedAt !== null) {
+          elapsedBeforeRun += performance.now() - runStartedAt;
+          runStartedAt = null;
+        }
+        if (timerFrame !== null) {
+          cancelAnimationFrame(timerFrame);
+          timerFrame = null;
+        }
+        if (reset) {
+          elapsedBeforeRun = 0;
+          clockStarted = false;
+          paintClock(0);
+        } else {
+          paintClock(elapsedBeforeRun);
+        }
+      }
+
+      function togglePause() {
+        if (isSolved || isAnimating || isDragging) {
+          return;
+        }
+
+        isPaused = !isPaused;
+        game.classList.toggle("paused", isPaused);
+        pauseButton.classList.toggle("is-paused", isPaused);
+        pauseIcon.textContent = isPaused ? "▶" : "Ⅱ";
+        pauseButton.setAttribute("aria-label", isPaused ? "Resume game" : "Pause game");
+        pauseOverlay.setAttribute("aria-hidden", String(!isPaused));
+        flipButton.disabled = isPaused;
+
+        if (isPaused) {
+          stopClock();
+        } else if (clockStarted) {
+          startClock();
+        }
+      }
+
+      function commitRotation(steps) {
+        if (steps === 0) {
+          return;
+        }
+        order = rotatedCopy(order, steps);
+        markOrderChanged();
+      }
+
+      function scheduleDragRender() {
+        if (dragRenderFrame !== null) {
+          return;
+        }
+
+        dragRenderFrame = requestAnimationFrame(() => {
+          dragRenderFrame = null;
+          render();
+        });
+      }
+
+      function updateDragFromPointer(event) {
+        const pointer = pointerInViewBox(event);
+        const projected = projectToTrack(pointer.x, pointer.y);
+        let delta = projected.progress - lastPointerProgress;
+
+        if (delta > SIZE / 2) {
+          delta -= SIZE;
+        } else if (delta < -SIZE / 2) {
+          delta += SIZE;
+        }
+
+        // Ignore projection jumps caused by cutting directly across the center.
+        if (Math.abs(delta) < 3.5) {
+          dragOffset += delta;
+          lastPointerProgress = projected.progress;
+        }
+      }
+
+      function animateSnap(targetOffset) {
+        const startOffset = dragOffset;
+        const distance = targetOffset - startOffset;
+        const reduceMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+        const duration = reduceMotion ? 0 : SNAP_ANIMATION_MS;
+        const startedAt = performance.now();
+
+        isAnimating = true;
+        game.classList.add("settling");
+
+        const paintFrame = (now) => {
+          const rawProgress = duration === 0
+            ? 1
+            : Math.min(1, (now - startedAt) / duration);
+          const easedProgress = 1 - Math.pow(1 - rawProgress, 3);
+          dragOffset = startOffset + distance * easedProgress;
+          render();
+
+          if (rawProgress < 1) {
+            snapAnimationFrame = requestAnimationFrame(paintFrame);
+            return;
+          }
+
+          snapAnimationFrame = null;
+          commitRotation(targetOffset);
+          dragOffset = 0;
+          isAnimating = false;
+          game.classList.remove("settling");
+          render();
+        };
+
+        snapAnimationFrame = requestAnimationFrame(paintFrame);
+      }
+
+      function beginDrag(event) {
+        if (isPaused || isSolved || isAnimating || activePointerId !== null) {
+          return;
+        }
+
+        refreshGameGeometry();
+        const pointer = pointerInViewBox(event);
+        const projected = projectToTrack(pointer.x, pointer.y);
+        if (projected.distance > 55) {
+          return;
+        }
+
+        activePointerId = event.pointerId;
+        lastPointerProgress = projected.progress;
+        dragStartClientX = event.clientX;
+        dragStartClientY = event.clientY;
+        dragHasMoved = false;
+        dragOffset = 0;
+        isDragging = true;
+        game.classList.add("dragging");
+        dragSurface.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      }
+
+      function moveDrag(event) {
+        if (!isDragging || event.pointerId !== activePointerId) {
+          return;
+        }
+
+        const samples = typeof event.getCoalescedEvents === "function"
+          ? event.getCoalescedEvents()
+          : [];
+        const pointerEvent = samples.length > 0
+          ? samples[samples.length - 1]
+          : event;
+        const pointerDistance = Math.hypot(
+          pointerEvent.clientX - dragStartClientX,
+          pointerEvent.clientY - dragStartClientY
+        );
+
+        if (!dragHasMoved && pointerDistance > 8) {
+          dragHasMoved = true;
+          screenTapEligible = false;
+          dismissGateCoach();
+          startClock();
+        }
+
+        updateDragFromPointer(pointerEvent);
+        scheduleDragRender();
+
+        event.preventDefault();
+      }
+
+      function endDrag(event) {
+        if (!isDragging || event.pointerId !== activePointerId) {
+          return;
+        }
+
+        const shouldFlipOnTap =
+          event.type === "pointerup" &&
+          !dragHasMoved &&
+          screenTapEligible;
+        const snappedSteps = Math.round(dragOffset);
+        isDragging = false;
+        activePointerId = null;
+        game.classList.remove("dragging");
+
+        if (dragSurface.hasPointerCapture(event.pointerId)) {
+          dragSurface.releasePointerCapture(event.pointerId);
+        }
+
+        if (dragRenderFrame !== null) {
+          cancelAnimationFrame(dragRenderFrame);
+          dragRenderFrame = null;
+        }
+
+        if (shouldFlipOnTap) {
+          dragOffset = 0;
+          render();
+          return;
+        }
+
+        animateSnap(snappedSteps);
+      }
+
+      function beginScreenTap(event) {
+        const target = event.target;
+        const isControl =
+          target instanceof Element && target.closest("button");
+        const isNonPrimaryMouse =
+          event.pointerType === "mouse" && event.button !== 0;
+
+        if (
+          isControl ||
+          isNonPrimaryMouse ||
+          isPaused ||
+          isSolved ||
+          snapAnimationFrame !== null
+        ) {
+          return;
+        }
+
+        screenTapPointerId = event.pointerId;
+        screenTapStartX = event.clientX;
+        screenTapStartY = event.clientY;
+        screenTapEligible = true;
+      }
+
+      function moveScreenTap(event) {
+        if (event.pointerId !== screenTapPointerId || !screenTapEligible) {
+          return;
+        }
+
+        const distance = Math.hypot(
+          event.clientX - screenTapStartX,
+          event.clientY - screenTapStartY
+        );
+        if (distance > 8) {
+          screenTapEligible = false;
+        }
+      }
+
+      function finishScreenTap(event) {
+        if (event.pointerId !== screenTapPointerId) {
+          return;
+        }
+
+        const shouldFlip =
+          event.type === "pointerup" && screenTapEligible;
+        screenTapPointerId = null;
+        screenTapEligible = false;
+
+        if (shouldFlip) {
+          flipGate();
+        }
+      }
+
+      function flipGate() {
+        if (isSolved) {
+          newPuzzle();
+          return;
+        }
+        if (isPaused || isDragging || snapAnimationFrame !== null) {
+          return;
+        }
+
+        dismissGateCoach();
+        startClock();
+        isAnimating = true;
+        if (flipAnimationTimer !== null) {
+          window.clearTimeout(flipAnimationTimer);
+        }
+        game.classList.remove("flipping");
+        void game.offsetWidth;
+        game.classList.add("flipping");
+        const scoreBeforeFlip = currentAnalysis().score;
+        order = reverseGate(order);
+        markOrderChanged();
+        const scoreAfterFlip = currentAnalysis().score;
+        flipCount += 1;
+
+        if (scoreAfterFlip > scoreBeforeFlip) {
+          setMoleMessage("Nice! The vine grew!");
+        } else if (scoreAfterFlip === scoreBeforeFlip) {
+          setMoleMessage("Good thinking—keep exploring!");
+        } else {
+          setMoleMessage("A new path can start here!");
+        }
+
+        requestAnimationFrame(() => {
+          render();
+        });
+
+        if (navigator.vibrate) {
+          navigator.vibrate(12);
+        }
+
+        flipAnimationTimer = window.setTimeout(() => {
+          isAnimating = false;
+          flipAnimationTimer = null;
+          game.classList.remove("flipping");
+          flipButton.disabled = isPaused;
+          render();
+        }, FLIP_ANIMATION_MS);
+      }
+
+      dragSurface.addEventListener("pointerdown", beginDrag);
+      dragSurface.addEventListener("pointermove", moveDrag);
+      dragSurface.addEventListener("pointerup", endDrag);
+      dragSurface.addEventListener("pointercancel", endDrag);
+      game.addEventListener("pointerdown", beginScreenTap);
+      game.addEventListener("pointermove", moveScreenTap);
+      game.addEventListener("pointerup", finishScreenTap);
+      game.addEventListener("pointercancel", finishScreenTap);
+      flipButton.addEventListener("click", flipGate);
+      pauseButton.addEventListener("click", togglePause);
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+          if (!isPaused && !isSolved && !isAnimating && !isDragging) {
+            dismissGateCoach();
+            startClock();
+            const steps = event.key === "ArrowLeft" ? -1 : 1;
+            dragOffset = 0;
+            animateSnap(steps);
+          }
+          event.preventDefault();
+        } else if (event.key === " " || event.key === "Enter") {
+          flipGate();
+          event.preventDefault();
+        } else if (event.key.toLowerCase() === "p") {
+          togglePause();
+          event.preventDefault();
+        }
+      });
+
+      // Small inspection API for prototype testing. The player UI does not use it.
+      window.loopTwentyPrototype = {
+        getState: () => ({
+          order: order.slice(),
+          initialOrder: initialOrder.slice(),
+          gateSlots: GATE_SLOTS.slice(),
+          score: analyzeOrder().score,
+          flipCount,
+          solved: isSolved,
+          scrambleCertificate: scrambleCertificate.map((move) => ({ ...move })),
+          solutionCertificate: inverseCertificate(scrambleCertificate)
+        }),
+        verifySolution: () => hasValidSolutionCertificate({
+          candidate: initialOrder,
+          certificate: scrambleCertificate
+        }),
+        newPuzzle,
+        rotate: (steps) => {
+          commitRotation(Math.round(steps));
+          render();
+        },
+        previewOffset: (offset) => {
+          dragOffset = Number(offset) || 0;
+          render();
+        },
+        flip: flipGate
+      };
+
+      refreshGameGeometry();
+      newPuzzle();
+
+      if ("ResizeObserver" in window) {
+        const resizeObserver = new ResizeObserver(() => {
+          refreshGameGeometry();
+          render();
+        });
+        resizeObserver.observe(game);
+      }
+    })();
+  </script>
+</body>
+</html>
