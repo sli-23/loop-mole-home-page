@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="theme-color" content="#D8F3FE" />
-<title>Loop 20</title>
+<meta name="theme-color" content="#B3E5FD" />
+<title>loopy mole</title>
 <meta name="description" content="A small, quiet puzzle about putting a ring of stones back in order." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,600..900,0..100,0..1&family=Quicksand:wght@400..700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================================
-   LOOP 20 — home
+   loopy mole — home
    Soft sky, soft lawn, one cool blue bubble. The scene is pinned and scroll
    drives the conversation; keep scrolling past the last line and the download
    card rises out of the same lawn (no hard seam between the two).
@@ -26,28 +26,28 @@
    ============================================================================ */
 :root{
   --sky-hi:#F4FBFE;
-  --sky-lo:#D8F3FE;
+  --sky-lo:#B3E5FD;
 
   --hill-1:#DCEFD4;
   --hill-2:#C2E4AC;
-  --hill-3:#A3D489;
-  --lawn:#8CC776;
-  --lawn-deep:#67A861;        /* their Figma green */
-  --lawn-dusk:#5FA05B;        /* only a whisper below --lawn-deep: at #4F8F58
+  --hill-3:#9AD186;
+  --lawn:#7EBF68;
+  --lawn-deep:#61A45F;        /* their Figma green */
+  --lawn-dusk:#5A9B58;        /* only a whisper below --lawn-deep: at #4F8F58
                                  the download section read as a separate block
                                  of colour instead of the same field */
 
   --sun:#FFE9A3;
   --sun-core:#FFD86B;
   --cloud:#FFFFFF;
-  --bubble:#D8F3FE;           /* Figma: Rectangle 4 + Polygon 1 */
-  --coral:#FE7251;            /* straight off his tail — the one accent */
+  --bubble:#B3E5FD;           /* Figma: Rectangle 4 + Polygon 1 */
+  --coral:#FF8261;            /* straight off his tail — the one accent */
 
   --paper:#FFFDF6;
-  --ink:#41564A;
-  --ink-70:rgba(65,86,74,.72);
-  --ink-45:rgba(65,86,74,.45);
-  --ink-18:rgba(65,86,74,.18);
+  --ink:#2C4433;
+  --ink-70:rgba(44,68,51,.72);
+  --ink-45:rgba(44,68,51,.45);
+  --ink-18:rgba(44,68,51,.18);
 
   --display:"Fraunces",Georgia,serif;
   --text:"Quicksand",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
@@ -137,13 +137,15 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   padding-bottom:clamp(20px,5vh,60px);}
 
 .wm{text-align:center; will-change:transform;}
-.wm .a{display:block; font-size:clamp(10.5px,1.2vw,14px); font-weight:700;
-  letter-spacing:.56em; padding-left:.56em; text-transform:uppercase; color:var(--ink-45);}
-.wm .b{display:block; margin-top:.02em;
-  font-family:var(--display); font-size:clamp(72px,11vw,158px); line-height:.86;
-  font-weight:900; letter-spacing:-.04em; color:#FFFFFF;
-  font-variation-settings:"SOFT" 100,"WONK" 1,"opsz" 144;
-  text-shadow:0 7px 0 var(--lawn-deep), 0 18px 26px rgba(65,86,74,.15);}
+/* The lockup is the one in the game: loopy large over mole smaller, Quicksand
+   Bold in ink, each line dropped onto cream. */
+.wm .a{display:block; font-family:var(--text); font-size:clamp(46px,7.4vw,104px);
+  font-weight:700; line-height:.92; letter-spacing:.01em; color:var(--ink);
+  text-shadow:0 clamp(3px,.42vw,6px) 0 var(--paper);}
+.wm .b{display:block; margin-top:.04em; font-family:var(--text);
+  font-size:clamp(31px,4.93vw,69px); line-height:.92; font-weight:700;
+  letter-spacing:.01em; color:var(--ink);
+  text-shadow:0 clamp(3px,.42vw,6px) 0 var(--paper);}
 .wm .t{margin:clamp(8px,1.5vh,16px) auto 0; max-width:30ch;
   font-size:clamp(13px,1.35vw,16.5px); color:var(--ink-70); line-height:1.45;}
 
@@ -246,14 +248,14 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
 .stone .d{display:block; line-height:1;}
 .stone{position:relative; z-index:2; flex:0 0 var(--sw); width:var(--sw); height:var(--sw);
   border-radius:50%; display:grid; place-items:center;
-  background:#FFFDF6; border:2px solid rgba(110,63,34,.4); color:var(--ink);
+  background:#FFFDF6; border:2px solid #A58773; color:var(--ink);
   font-size:calc(var(--sw) * .44); font-weight:700; font-variant-numeric:tabular-nums;
-  box-shadow:0 3px 0 #E3D6BA;
+  box-shadow:0 3px 0 rgba(255,253,246,.72);
   transition:background .45s var(--ease), color .45s var(--ease),
              border-color .45s var(--ease), transform .13s var(--ease);}
 /* the green links, for when the row comes good */
 .link{position:absolute; z-index:1; top:50%; height:5px; margin-top:-2.5px;
-  background:#4E9B57; border-radius:3px; opacity:0;
+  background:#35784A; border-radius:3px; opacity:0;
   transition:opacity .45s var(--ease);}
 
 /* the gate: the only thing that travels */
@@ -262,7 +264,7 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   height:calc(var(--sw) + var(--sgap) * 1.7);
   width:calc(var(--sw) * 4 + var(--sgap) * 4.4);
   border:3px solid #8A5E33; border-radius:99px;
-  background:rgba(181,128,74,.3); box-shadow:0 3px 0 rgba(65,86,74,.12);
+  background:rgba(138,94,51,.13); box-shadow:0 3px 0 rgba(44,68,51,.12);
   transition:opacity .4s var(--ease), transform .55s var(--ease);}
 
 /* line 2 — the gate slides the length of the row; the stones do not budge */
@@ -277,8 +279,8 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
 
 /* line 4 — in order, links closed, gate bows out */
 .demo.done .gate{opacity:0;}
-.demo.done .stone{background:#4E9B57; border-color:#3C7F46; color:#FFFDF6;
-  box-shadow:0 3px 0 #3C7F46;}
+.demo.done .stone{background:#35784A; border-color:#7AA585; color:#FFFDF6;
+  box-shadow:0 3px 0 rgba(44,68,51,.25);}
 .demo.done .link{opacity:1;}
 
 .meta{display:flex; align-items:center; gap:7px; margin-top:clamp(10px,1.2vw,15px);}
@@ -363,9 +365,8 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   display:grid; place-items:center; overflow:hidden;}
 .appicon svg{width:88%; height:auto; display:block;}
 
-.get h2{margin:0; font-family:var(--display); font-weight:900;
-  font-size:clamp(26px,3.6vw,44px); line-height:1.04; letter-spacing:-.025em; color:var(--ink);
-  font-variation-settings:"SOFT" 100,"WONK" 1,"opsz" 144;}
+.get h2{margin:0; font-family:var(--text); font-weight:700;
+  font-size:clamp(26px,3.6vw,42px); line-height:1.12; letter-spacing:-.005em; color:var(--ink);}
 .get .sub{margin:0; font-size:clamp(13px,1.4vw,16px); color:var(--ink-70); max-width:32ch;}
 
 .play-note{display:flex; align-items:center; gap:12px; margin-top:2px;
@@ -379,14 +380,14 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   letter-spacing:.04em;}
 
 .badge{display:inline-flex; align-items:center; gap:10px; text-decoration:none;
-  padding:11px 21px 11px 17px; border-radius:12px; background:#1B2A20; color:#FFFFFF;
-  box-shadow:0 8px 18px rgba(30,60,38,.28);
+  padding:11px 23px 11px 19px; border-radius:999px; background:var(--coral);
+  border:2px solid #774834; color:var(--ink); box-shadow:0 4px 0 #F7683E;
   transition:transform .16s var(--ease), box-shadow .16s var(--ease);}
-.badge:hover{transform:translateY(-2px); box-shadow:0 12px 22px rgba(30,60,38,.34);}
-.badge:active{transform:translateY(1px);}
+.badge:hover{transform:translateY(-1px); box-shadow:0 5px 0 #F7683E;}
+.badge:active{transform:translateY(2px); box-shadow:0 2px 0 #F7683E;}
 .badge svg{width:22px; height:22px; fill:currentColor; flex:0 0 auto;}
 .badge span{display:grid; text-align:left; line-height:1.14;}
-.badge .s1{font-size:9px; font-weight:500; opacity:.82; letter-spacing:.08em; text-transform:uppercase;}
+.badge .s1{font-size:9px; font-weight:700; color:rgba(44,68,51,.66); letter-spacing:.08em; text-transform:uppercase;}
 .badge .s2{font-size:16.5px; font-weight:700; letter-spacing:-.01em;}
 
 .get footer{position:absolute; bottom:clamp(16px,3vh,30px); left:0; right:0;
@@ -421,8 +422,8 @@ body{margin:0; font-family:var(--text); font-weight:500; color:var(--ink);
   .wm{flex:0 0 auto;}
   /* the title carries the page on a phone, so it runs bigger here than the
      desktop ramp would give, and he gives up a little size to it */
-  .wm .a{font-size:clamp(11.5px,3vw,14px); letter-spacing:.5em; padding-left:.5em;}
-  .wm .b{font-size:clamp(68px,20.5vw,118px);}
+  .wm .a{font-size:clamp(44px,12.6vw,74px);}
+  .wm .b{font-size:clamp(29px,8.4vw,49px);}
   .wm .t{max-width:23ch; font-size:clamp(14px,4vw,17.5px);}
 
   /* the group takes everything the title leaves, and centres inside it */
@@ -497,15 +498,15 @@ html.tap-locked, html.tap-locked body{overflow:hidden; height:100%;}
 
     <div class="scene">
       <div class="wm" id="wm">
-        <span class="a">loop</span>
-        <span class="b">20</span>
+        <span class="a">loopy</span>
+        <span class="b">mole</span>
         <p class="t">A small, quiet puzzle about putting things back in order.</p>
       </div>
 
       <div class="pair">
         <div class="molebox">
           <!-- the mascot artwork exactly as supplied -->
-          <svg class="mole" id="mole" viewBox="0 0 285 215" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Loop 20's mole">
+          <svg class="mole" id="mole" viewBox="0 0 285 215" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the loopy mole mascot">
 <mask id="mole-mask-scene" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="32" y="98" width="84" height="79">
 <path d="M34.5642 121.587C41.502 102.106 64.8367 93.5397 86.6839 102.454C108.531 111.369 120.618 134.389 113.68 153.871C106.742 173.352 83.407 181.918 61.5597 173.003C39.7127 164.088 27.6264 141.069 34.5642 121.587ZM57.7653 130.27C55.4527 136.764 61.4707 145.248 71.2059 149.221C80.941 153.193 90.7076 151.149 93.0201 144.656C95.3325 138.162 89.3153 129.678 79.5804 125.705C69.8453 121.733 60.0779 123.776 57.7653 130.27Z" fill="white"/>
 </mask>
@@ -563,7 +564,7 @@ html.tap-locked, html.tap-locked body{overflow:hidden; height:100%;}
 <section class="get">
   <div class="card">
     <div class="appicon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 354 316"
-     role="img" aria-label="Loop 20">
+     role="img" aria-label="loopy mole">
   <g transform="translate(35.40,103.20) scale(0.8)">
     <path d="M353.6 102.06C294.7 136.06 235.7 170.06 176.8 204.16V265.36C235.7 231.36 294.7 197.36 353.6 163.26V102.06Z" fill="#542B0A"/>
     <path d="M176.8 204.16C117.9 170.06 58.9 136.06 0 102.06V163.26C58.9 197.36 117.9 231.36 176.8 265.36V204.16Z" fill="#542B0A"/>
@@ -600,7 +601,7 @@ html.tap-locked, html.tap-locked body{overflow:hidden; height:100%;}
 <ellipse cx="21.0042" cy="12.7701" rx="21.0042" ry="12.7701" transform="matrix(0.971625 -0.248904 0.236325 0.968575 202.72 182.23)" fill="#FDCCA3"/>
   </svg>
 </svg></div>
-    <h2>Play Loop 20 in your browser</h2>
+    <h2>Play loopy mole in your browser</h2>
     <p class="sub">The playable prototype works on phones and desktops. No installation required.</p>
 
     <div class="play-note">
@@ -614,12 +615,12 @@ html.tap-locked, html.tap-locked body{overflow:hidden; height:100%;}
       </span>
     </div>
 
-    <a class="badge" href="./play/" aria-label="Play Loop 20 in your browser">
+    <a class="badge" href="https://sli-23.github.io/loopy-mole-prototype/prototype/" aria-label="Play loopy mole in your browser">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-      <span><span class="s1">No download needed</span><span class="s2">Play Loop 20</span></span>
+      <span><span class="s1">No download needed</span><span class="s2">Play loopy mole</span></span>
     </a>
   </div>
-  <footer>Loop 20</footer>
+  <footer>loopy mole</footer>
 </section>
 
 <script>
