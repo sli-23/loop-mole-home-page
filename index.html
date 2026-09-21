@@ -766,7 +766,7 @@ function applyMode(){
   const tap = tapMode();
   document.documentElement.classList.toggle('tap-locked', tap && !finished());
   $('hint').classList.toggle('tap', tap && !finished());
-  $('hintword').textContent = !tap ? 'scroll'
+  $('hintword').textContent = !tap ? (finished() ? 'click to play' : 'click or scroll')
     : finished() ? 'scroll to play' : 'tap to continue';
 }
 
@@ -796,15 +796,34 @@ addEventListener('scroll', () => {
 addEventListener('resize', () => { applyMode(); frame(); });
 addEventListener('orientationchange', () => setTimeout(() => { applyMode(); frame(); }, 250));
 
-/* tap anywhere on the scene for the next line (phones only) */
-stage.addEventListener('click', () => {
-  if(!tapMode() || finished()) return;
-  setLine(at + 1);
-});
+/* Tap or click anywhere on the scene for the next line, at any width, so the
+   conversation can be read through without a mouse wheel or a trackpad. */
+function advance(){
+  if(tapMode()){
+    if(!finished()) setLine(at + 1);
+    return;
+  }
+  /* On desktop the scroll position decides which line shows, so this scrolls to
+     the next line's band rather than calling setLine -- otherwise the next scroll
+     event would overwrite it. The current line is read back from scrollY rather
+     than from `at`, because `at` is only refreshed inside a requestAnimationFrame
+     throttle; trusting it would make quick repeat clicks land on the same line. */
+  const span = rig.offsetHeight - innerHeight;
+  if(span <= 0) return;
+  const here = Math.floor((scrollY / span) * LINES.length * 0.999);
+  const next = here + 1;
+  if(next > LINES.length - 1){
+    document.querySelector('.get').scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
+  scrollTo({top: Math.min(span, ((next + 0.5) / (LINES.length * 0.999)) * span),
+            behavior:'smooth'});
+}
+
+stage.addEventListener('click', advance);
 addEventListener('keydown', e => {
-  if(!tapMode()) return;
-  if((e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') && !finished()){
-    e.preventDefault(); setLine(at + 1);
+  if(e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight'){
+    e.preventDefault(); advance();
   }
 });
 
